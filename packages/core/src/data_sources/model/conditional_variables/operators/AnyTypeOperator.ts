@@ -1,7 +1,8 @@
 import DataVariable from '../../DataVariable';
-import { Operator } from '.';
+import { Operator } from './BaseOperator';
+import EditorModel from '../../../../editor/model/Editor';
 
-export enum GenericOperation {
+export enum AnyTypeOperation {
   equals = 'equals',
   isTruthy = 'isTruthy',
   isFalsy = 'isFalsy',
@@ -16,13 +17,9 @@ export enum GenericOperation {
   isDefaultValue = 'isDefaultValue', // For Datasource variables
 }
 
-export class GenericOperator extends Operator {
-  constructor(private operator: GenericOperation) {
-    super();
-  }
-
+export class AnyTypeOperator extends Operator<AnyTypeOperation> {
   evaluate(left: any, right: any): boolean {
-    switch (this.operator) {
+    switch (this.operation) {
       case 'equals':
         return left === right;
       case 'isTruthy':
@@ -48,7 +45,8 @@ export class GenericOperator extends Operator {
       case 'isDefaultValue':
         return left instanceof DataVariable && left.get('defaultValue') === right;
       default:
-        throw new Error(`Unsupported generic operator: ${this.operator}`);
+        this.em?.logError(`Unsupported generic operation: ${this.operation}`);
+        return false;
     }
   }
 }

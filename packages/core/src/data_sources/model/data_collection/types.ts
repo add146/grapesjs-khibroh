@@ -36,6 +36,7 @@ export interface DataCollectionStateMap {
 }
 
 export interface ComponentDataCollectionProps extends ComponentDefinition {
+  type: typeof DataCollectionType;
   [keyCollectionDefinition]: DataCollectionProps;
 }
 
@@ -44,7 +45,6 @@ export interface ComponentDataCollectionVariableProps
     Omit<ComponentProperties, 'type'> {}
 
 export interface DataCollectionProps {
-  type: typeof DataCollectionType;
   collectionConfig: DataCollectionConfig;
   componentDef: ComponentDefinition;
 }

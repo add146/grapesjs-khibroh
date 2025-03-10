@@ -40,8 +40,7 @@ export function getDataResolverInstance(
       resolver = new DataVariable(resolverProps, options);
       break;
     case DataConditionType: {
-      const { condition, ifTrue, ifFalse } = resolverProps;
-      resolver = new DataCondition(condition, ifTrue, ifFalse, options);
+      resolver = new DataCondition(resolverProps, options);
       break;
     }
     case DataCollectionVariableType: {
@@ -64,5 +63,5 @@ export function getDataResolverInstanceValue(
 ) {
   const resolver = getDataResolverInstance(resolverProps, options);
 
-  return { resolver, value: resolver.getDataValue() };
+  return resolver.getDataValue();
 }

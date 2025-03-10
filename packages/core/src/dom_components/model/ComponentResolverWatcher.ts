@@ -2,7 +2,11 @@ import { ObjectAny } from '../../common';
 import { DataCollectionVariableType } from '../../data_sources/model/data_collection/constants';
 import { DataCollectionStateMap } from '../../data_sources/model/data_collection/types';
 import DataResolverListener from '../../data_sources/model/DataResolverListener';
-import { getDataResolverInstanceValue, isDataResolverProps } from '../../data_sources/model/utils';
+import {
+  getDataResolverInstance,
+  getDataResolverInstanceValue,
+  isDataResolverProps,
+} from '../../data_sources/model/utils';
 import EditorModel from '../../editor/model/Editor';
 import { DataResolverProps } from '../../data_sources/types';
 import Component from './Component';
@@ -90,7 +94,7 @@ export class ComponentResolverWatcher {
         continue;
       }
 
-      const { resolver } = getDataResolverInstanceValue(resolverProps, { em, collectionsStateMap });
+      const resolver = getDataResolverInstance(resolverProps, { em, collectionsStateMap });
       this.resolverListeners[key] = new DataResolverListener({
         em,
         resolver,
@@ -112,8 +116,7 @@ export class ComponentResolverWatcher {
         continue;
       }
 
-      const { value } = getDataResolverInstanceValue(resolverProps, { em, collectionsStateMap });
-      evaluatedValues[key] = value;
+      evaluatedValues[key] = getDataResolverInstanceValue(resolverProps, { em, collectionsStateMap });
     }
 
     return evaluatedValues;

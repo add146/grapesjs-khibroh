@@ -14,8 +14,12 @@ export interface DataResolverListenerProps {
   onUpdate: (value: any) => void;
 }
 
+interface ListenerWithCallback extends DataSourceListener {
+  callback: () => void;
+}
+
 export default class DataResolverListener {
-  private listeners: DataSourceListener[] = [];
+  private listeners: ListenerWithCallback[] = [];
   private em: EditorModel;
   private onUpdate: (value: any) => void;
   private model = new Model();
@@ -33,10 +37,14 @@ export default class DataResolverListener {
     this.onUpdate(value);
   };
 
+  private createListener(obj: any, event: string, callback: () => void = this.onChange): ListenerWithCallback {
+    return { obj, event, callback };
+  }
+
   listenToResolver() {
     const { resolver, model } = this;
     this.removeListeners();
-    let listeners: DataSourceListener[] = [];
+    let listeners: ListenerWithCallback[] = [];
     const type = resolver.attributes.type;
 
     switch (type) {
@@ -51,11 +59,11 @@ export default class DataResolverListener {
         break;
     }
 
-    listeners.forEach((ls) => model.listenTo(ls.obj, ls.event, this.onChange));
+    listeners.forEach((ls) => model.listenTo(ls.obj, ls.event, ls.callback));
     this.listeners = listeners;
   }
 
-  private listenToConditionalVariable(dataVariable: DataCondition) {
+  private listenToConditionalVariable(dataVariable: DataCondition): ListenerWithCallback[] {
     const { em } = this;
     const dataListeners = dataVariable.getDependentDataVariables().flatMap((dataVariable) => {
       return this.listenToDataVariable(new DataVariable(dataVariable, { em }));
@@ -64,29 +72,41 @@ export default class DataResolverListener {
     return dataListeners;
   }
 
-  private listenToDataVariable(dataVariable: DataVariable) {
+  private listenToDataVariable(dataVariable: DataVariable): ListenerWithCallback[] {
     const { em } = this;
-    const dataListeners: DataSourceListener[] = [];
     const { path } = dataVariable.attributes;
     const normPath = stringToPath(path || '').join('.');
     const [ds, dr] = em.DataSources.fromPath(path!);
-    ds && dataListeners.push({ obj: ds.records, event: 'add remove reset' });
-    dr && dataListeners.push({ obj: dr, event: 'change' });
+
+    const dataListeners: ListenerWithCallback[] = [];
+
+    if (ds) {
+      dataListeners.push(this.createListener(ds.records, 'add remove reset'));
+    }
+
+    if (dr) {
+      dataListeners.push(this.createListener(dr, 'change'));
+    }
+
     dataListeners.push(
-      { obj: dataVariable, event: 'change:path change:defaultValue' },
-      { obj: em.DataSources.all, event: 'add remove reset' },
-      { obj: em, event: `${DataSourcesEvents.path}:${normPath}` },
+      this.createListener(dataVariable, 'change:path', () => {
+        this.listenToResolver();
+        this.onChange();
+      }),
+      this.createListener(dataVariable, 'change:defaultValue'),
+      this.createListener(em.DataSources.all, 'add remove reset'),
+      this.createListener(em, `${DataSourcesEvents.path}:${normPath}`),
     );
 
     return dataListeners;
   }
 
-  private listenToDataCollectionVariable(dataVariable: DataCollectionVariable) {
-    return [{ obj: dataVariable, event: 'change:value' }];
+  private listenToDataCollectionVariable(dataVariable: DataCollectionVariable): ListenerWithCallback[] {
+    return [this.createListener(dataVariable, 'change:value')];
   }
 
   private removeListeners() {
-    this.listeners.forEach((ls) => this.model.stopListening(ls.obj, ls.event, this.onChange));
+    this.listeners.forEach((ls) => this.model.stopListening(ls.obj, ls.event, ls.callback));
     this.listeners = [];
   }
 

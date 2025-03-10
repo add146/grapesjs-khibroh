@@ -1,10 +1,7 @@
 import { DataSourceManager, Editor } from '../../../../../src';
 import { DataVariableType } from '../../../../../src/data_sources/model/DataVariable';
-import {
-  DataConditionType,
-  MissingConditionError,
-} from '../../../../../src/data_sources/model/conditional_variables/DataCondition';
-import { GenericOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/GenericOperator';
+import { DataConditionType } from '../../../../../src/data_sources/model/conditional_variables/DataCondition';
+import { AnyTypeOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/AnyTypeOperator';
 import { NumberOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/NumberOperator';
 import ComponentWrapper from '../../../../../src/dom_components/model/ComponentWrapper';
 import EditorModel from '../../../../../src/editor/model/Editor';
@@ -69,7 +66,7 @@ describe('StyleConditionalVariable', () => {
               type: DataVariableType,
               path: 'ds1.left_id.left',
             },
-            operator: GenericOperation.equals,
+            operator: AnyTypeOperation.equals,
             right: {
               type: DataVariableType,
               path: 'ds1.right_id.right',
@@ -85,23 +82,6 @@ describe('StyleConditionalVariable', () => {
 
     dsm.get('ds1').getRecord('right_id')?.set('right', 'Value1');
     expect(component.getStyle().color).toBe('green');
-  });
-
-  it('should throw an error if no condition is passed in style', () => {
-    expect(() => {
-      cmpRoot.append({
-        tagName: 'h1',
-        type: 'text',
-        content: 'some text',
-        style: {
-          color: {
-            type: DataConditionType,
-            ifTrue: 'grey',
-            ifFalse: 'red',
-          },
-        },
-      });
-    }).toThrow(MissingConditionError);
   });
 
   it.skip('should store components with conditional styles correctly', () => {

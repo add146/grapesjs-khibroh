@@ -1,41 +1,39 @@
-import { DataVariableProps } from './../DataVariable';
+import { DataVariableProps } from '../DataVariable';
 import EditorModel from '../../../editor/model/Editor';
 import { evaluateVariable, isDataVariable } from '../utils';
 import { ExpressionProps, LogicGroupProps } from './DataCondition';
-import { LogicalGroupStatement } from './LogicalGroupStatement';
-import { Operator } from './operators';
-import { GenericOperation, GenericOperator } from './operators/GenericOperator';
-import { LogicalOperator } from './operators/LogicalOperator';
+import { LogicalGroupEvaluator } from './LogicalGroupEvaluator';
+import { Operator } from './operators/BaseOperator';
+import { AnyTypeOperation, AnyTypeOperator } from './operators/AnyTypeOperator';
+import { BooleanOperator } from './operators/BooleanOperator';
 import { NumberOperator, NumberOperation } from './operators/NumberOperator';
-import { StringOperator, StringOperation } from './operators/StringOperations';
+import { StringOperator, StringOperation } from './operators/StringOperator';
 import { Model } from '../../../common';
+import { DataConditionOperation } from './operators/types';
 
 export type ConditionProps = ExpressionProps | LogicGroupProps | boolean;
 
-export class Condition extends Model {
-  private condition: ConditionProps;
+interface DataConditionEvaluatorProps {
+  condition: ConditionProps;
+}
+
+export class DataConditionEvaluator extends Model<DataConditionEvaluatorProps> {
   private em: EditorModel;
 
-  constructor(props: ConditionProps, opts: { em: EditorModel }) {
+  constructor(props: DataConditionEvaluatorProps, opts: { em: EditorModel }) {
     super(props);
-    this.condition = props;
     this.em = opts.em;
   }
 
   evaluate(): boolean {
-    return this.evaluateCondition(this.condition);
-  }
-
-  /**
-   * Recursively evaluates conditions and logic groups.
-   */
-  private evaluateCondition(condition: ConditionProps): boolean {
+    const em = this.em;
+    const condition = this.get('condition');
     if (typeof condition === 'boolean') return condition;
 
     if (this.isLogicGroup(condition)) {
       const { logicalOperator, statements } = condition;
-      const operator = new LogicalOperator(logicalOperator);
-      const logicalGroup = new LogicalGroupStatement(operator, statements, { em: this.em });
+      const operator = new BooleanOperator(logicalOperator, { em });
+      const logicalGroup = new LogicalGroupEvaluator(operator, statements, { em });
       return logicalGroup.evaluate();
     }
 
@@ -49,62 +47,65 @@ export class Condition extends Model {
       return evaluated;
     }
 
-    throw new Error('Invalid condition type.');
+    this.em.logError('Invalid condition type.');
+    return false;
   }
 
   /**
    * Factory method for creating operators based on the data type.
    */
-  private getOperator(left: any, operator: string): Operator {
-    if (this.isOperatorInEnum(operator, GenericOperation)) {
-      return new GenericOperator(operator as GenericOperation);
+  private getOperator(left: any, operator: string): Operator<DataConditionOperation> {
+    const em = this.em;
+
+    if (this.isOperatorInEnum(operator, AnyTypeOperation)) {
+      return new AnyTypeOperator(operator as AnyTypeOperation, { em });
     } else if (typeof left === 'number') {
-      return new NumberOperator(operator as NumberOperation);
+      return new NumberOperator(operator as NumberOperation, { em });
     } else if (typeof left === 'string') {
-      return new StringOperator(operator as StringOperation);
+      return new StringOperator(operator as StringOperation, { em });
     }
     throw new Error(`Unsupported data type: ${typeof left}`);
   }
 
-  /**
-   * Extracts all data variables from the condition, including nested ones.
-   */
-  getDataVariables() {
-    const variables: DataVariableProps[] = [];
-    this.extractVariables(this.condition, variables);
-    return variables;
+  getDependentDataVariables(): DataVariableProps[] {
+    const condition = this.get('condition');
+    if (!condition) return [];
+
+    return this.extractDataVariables(condition);
   }
 
-  /**
-   * Recursively extracts variables from expressions or logic groups.
-   */
-  private extractVariables(condition: ConditionProps, variables: DataVariableProps[]): void {
+  private extractDataVariables(condition: ConditionProps): DataVariableProps[] {
+    const variables: DataVariableProps[] = [];
+
     if (this.isExpression(condition)) {
       if (isDataVariable(condition.left)) variables.push(condition.left);
       if (isDataVariable(condition.right)) variables.push(condition.right);
     } else if (this.isLogicGroup(condition)) {
-      condition.statements.forEach((stmt) => this.extractVariables(stmt, variables));
+      condition.statements.forEach((stmt) => variables.push(...this.extractDataVariables(stmt)));
     }
+
+    return variables;
   }
 
-  /**
-   * Checks if a condition is a LogicGroup.
-   */
   private isLogicGroup(condition: any): condition is LogicGroupProps {
     return condition && typeof condition.logicalOperator !== 'undefined' && Array.isArray(condition.statements);
   }
 
-  /**
-   * Checks if a condition is an Expression.
-   */
   private isExpression(condition: any): condition is ExpressionProps {
     return condition && typeof condition.left !== 'undefined' && typeof condition.operator === 'string';
   }
 
-  /**
-   * Checks if an operator exists in a specific enum.
-   */
   private isOperatorInEnum(operator: string, enumObject: any): boolean {
     return Object.values(enumObject).includes(operator);
+  }
+
+  toJSON(options?: any) {
+    const condition = this.get('condition');
+    if (typeof condition === 'object') {
+      const json = JSON.parse(JSON.stringify(condition));
+      return json;
+    }
+
+    return condition;
   }
 }

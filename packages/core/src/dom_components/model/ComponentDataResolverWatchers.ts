@@ -82,7 +82,7 @@ export class ComponentDataResolverWatchers {
     const keys = this.propertyWatcher.getDynamicValuesOfType(DataCollectionVariableType);
     const attributesKeys = this.attributeWatcher.getDynamicValuesOfType(DataCollectionVariableType);
 
-    const combinedKeys = [keyCollectionsStateMap, ...keys];
+    const combinedKeys = [keyCollectionsStateMap, 'locked', ...keys];
     const haveOverridenAttributes = Object.keys(attributesKeys).length;
     if (haveOverridenAttributes) combinedKeys.push('attributes');
 

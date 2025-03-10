@@ -18,6 +18,7 @@ export default class ComponentDataCollectionVariable extends Component {
       collectionId: undefined,
       variableType: undefined,
       path: undefined,
+      droppable: false,
     };
   }
 

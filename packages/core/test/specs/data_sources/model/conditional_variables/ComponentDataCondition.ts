@@ -1,10 +1,7 @@
 import { Component, DataSourceManager, Editor } from '../../../../../src';
 import { DataVariableType } from '../../../../../src/data_sources/model/DataVariable';
-import {
-  MissingConditionError,
-  DataConditionType,
-} from '../../../../../src/data_sources/model/conditional_variables/DataCondition';
-import { GenericOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/GenericOperator';
+import { DataConditionType } from '../../../../../src/data_sources/model/conditional_variables/DataCondition';
+import { AnyTypeOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/AnyTypeOperator';
 import { NumberOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/NumberOperator';
 import ComponentDataConditionView from '../../../../../src/data_sources/view/ComponentDataConditionView';
 import ComponentWrapper from '../../../../../src/dom_components/model/ComponentWrapper';
@@ -13,7 +10,7 @@ import ComponentTextView from '../../../../../src/dom_components/view/ComponentT
 import EditorModel from '../../../../../src/editor/model/Editor';
 import { setupTestEditor } from '../../../../common';
 
-describe('ComponentConditionalVariable', () => {
+describe('ComponentDataCondition', () => {
   let editor: Editor;
   let em: EditorModel;
   let dsm: DataSourceManager;
@@ -100,7 +97,7 @@ describe('ComponentConditionalVariable', () => {
           type: DataVariableType,
           path: 'ds1.left_id.left',
         },
-        operator: GenericOperation.equals,
+        operator: AnyTypeOperation.equals,
         right: {
           type: DataVariableType,
           path: 'ds1.right_id.right',
@@ -124,10 +121,10 @@ describe('ComponentConditionalVariable', () => {
     expect(childComponent.getInnerHTML()).toBe('Some value');
 
     /* Test changing datasources */
-    updatedsmLeftValue(dsm, 'Diffirent value');
+    changeDataSourceValue(dsm, 'Diffirent value');
     expect(getFirstChild(component).getInnerHTML()).toBe('False value');
     expect(getFirstChildView(component)?.el.innerHTML).toBe('False value');
-    updatedsmLeftValue(dsm, 'Name1');
+    changeDataSourceValue(dsm, 'Name1');
     expect(getFirstChild(component).getInnerHTML()).toBe('Some value');
     expect(getFirstChildView(component)?.el.innerHTML).toBe('Some value');
   });
@@ -149,7 +146,7 @@ describe('ComponentConditionalVariable', () => {
           type: DataVariableType,
           path: 'ds1.left_id.left',
         },
-        operator: GenericOperation.equals,
+        operator: AnyTypeOperation.equals,
         right: {
           type: DataVariableType,
           path: 'ds1.right_id.right',
@@ -165,7 +162,7 @@ describe('ComponentConditionalVariable', () => {
                 type: DataVariableType,
                 path: 'ds1.left_id.left',
               },
-              operator: GenericOperation.equals,
+              operator: AnyTypeOperation.equals,
               right: {
                 type: DataVariableType,
                 path: 'ds1.right_id.right',
@@ -213,24 +210,9 @@ describe('ComponentConditionalVariable', () => {
     const storageCmptDef = frame.component.components[0];
     expect(storageCmptDef).toEqual(conditionalCmptDef);
   });
-
-  it('should throw an error if no condition is passed', () => {
-    const conditionalCmptDef = {
-      type: DataConditionType,
-      ifTrue: {
-        tagName: 'h1',
-        type: 'text',
-        content: 'some text',
-      },
-    };
-
-    expect(() => {
-      cmpRoot.append(conditionalCmptDef);
-    }).toThrow(MissingConditionError);
-  });
 });
 
-function updatedsmLeftValue(dsm: DataSourceManager, newValue: string) {
+function changeDataSourceValue(dsm: DataSourceManager, newValue: string) {
   dsm.get('ds1').getRecord('left_id')?.set('left', newValue);
 }
 

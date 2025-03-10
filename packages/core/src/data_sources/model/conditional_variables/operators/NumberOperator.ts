@@ -1,4 +1,4 @@
-import { Operator } from '.';
+import { Operator } from './BaseOperator';
 
 export enum NumberOperation {
   greaterThan = '>',
@@ -9,13 +9,9 @@ export enum NumberOperation {
   notEquals = '!=',
 }
 
-export class NumberOperator extends Operator {
-  constructor(private operator: NumberOperation) {
-    super();
-  }
-
+export class NumberOperator extends Operator<NumberOperation> {
   evaluate(left: number, right: number): boolean {
-    switch (this.operator) {
+    switch (this.operation) {
       case NumberOperation.greaterThan:
         return left > right;
       case NumberOperation.lessThan:
@@ -29,7 +25,8 @@ export class NumberOperator extends Operator {
       case NumberOperation.notEquals:
         return left !== right;
       default:
-        throw new Error(`Unsupported number operator: ${this.operator}`);
+        this.em.logError(`Unsupported number operation: ${this.operation}`);
+        return false;
     }
   }
 }

@@ -13,6 +13,7 @@ export default class ComponentDataVariable extends Component {
       type: DataVariableType,
       path: '',
       defaultValue: '',
+      droppable: false,
     };
   }
 
@@ -22,12 +23,28 @@ export default class ComponentDataVariable extends Component {
     this.dataResolver = new DataVariable({ type, path, defaultValue }, opt);
   }
 
+  getPath() {
+    return this.dataResolver.get('path');
+  }
+
+  getDefaultValue() {
+    return this.dataResolver.get('defaultValue');
+  }
+
   getDataValue() {
     return this.dataResolver.getDataValue();
   }
 
   getInnerHTML() {
     return this.getDataValue();
+  }
+
+  setPath(newPath: string) {
+    this.dataResolver.set('path', newPath);
+  }
+
+  setDefaultValue(newValue: string) {
+    this.dataResolver.set('defaultValue', newValue);
   }
 
   static isComponent(el: HTMLElement) {

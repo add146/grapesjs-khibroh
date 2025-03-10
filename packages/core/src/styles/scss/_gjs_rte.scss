@@ -1,6 +1,9 @@
-.#{$rte-prefix} {
+@use 'gjs_vars';
+@use 'gjs_category_general';
+
+.#{gjs_vars.$rte-prefix} {
   &toolbar {
-    @extend .#{$app-prefix}no-user-select;
+    @extend .#{gjs_vars.$app-prefix}no-user-select;
 
     position: absolute;
     z-index: 10;

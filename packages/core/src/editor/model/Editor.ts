@@ -314,6 +314,14 @@ export default class EditorModel extends Model {
     return this.config.grapesjs?.version || '';
   }
 
+  get isHeadless() {
+    return !!this.config.headless;
+  }
+
+  get isShallow() {
+    return !!this.get('isShallow');
+  }
+
   /**
    * Get configurations
    * @param  {string} [prop] Property name

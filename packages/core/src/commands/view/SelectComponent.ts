@@ -496,7 +496,7 @@ export default {
           const style: any = {};
 
           if (!onlyHeight) {
-            const bodyw = canvas.getBody().offsetWidth;
+            const bodyw = canvas.getBody()?.offsetWidth || 0;
             const width = rect.w < bodyw ? rect.w : bodyw;
             style[keyWidth!] = autoWidth ? 'auto' : `${width}${unitWidth}`;
           }

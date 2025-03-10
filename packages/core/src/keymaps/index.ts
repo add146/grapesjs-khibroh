@@ -64,6 +64,7 @@ export default class KeymapsModule extends Module<KeymapsConfig & { name?: strin
   }
 
   onLoad() {
+    if (this.em.isHeadless) return;
     const defKeys = this.config.defaults;
 
     for (let id in defKeys) {
@@ -121,7 +122,7 @@ export default class KeymapsModule extends Module<KeymapsConfig & { name?: strin
         const handlerRes = isString(handler) ? cmd.get(handler) : handler;
         const ableTorun = !em.isEditing() && !editor.Canvas.isInputFocused();
         if (ableTorun || opts.force) {
-          opts.prevent && canvas.getCanvasView().preventDefault(e);
+          opts.prevent && canvas.getCanvasView()?.preventDefault(e);
           isFunction(handlerRes) ? handlerRes(editor, 0, opt) : cmd.runCommand(handlerRes, opt);
           const args = [id, h.shortcut, e];
           em.trigger('keymap:emit', ...args);

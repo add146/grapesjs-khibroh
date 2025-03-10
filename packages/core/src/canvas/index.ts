@@ -486,7 +486,9 @@ export default class CanvasModule extends Module<CanvasConfig> {
    */
   getMouseRelativePos(e: any, opts: any = {}) {
     const subWinOffset = opts.subWinOffset;
-    const doc = e.target.ownerDocument;
+    const { target } = e;
+    // In Firefox, pointing outside the window, will return the HTMLDocument.
+    const doc = target.nodeType === Node.DOCUMENT_NODE ? target : target.ownerDocument;
     const win = doc.defaultView || doc.parentWindow;
     const frame = win.frameElement;
     const yOffset = subWinOffset ? win.pageYOffset : 0;

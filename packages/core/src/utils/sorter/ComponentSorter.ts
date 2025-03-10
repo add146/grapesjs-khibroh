@@ -182,7 +182,7 @@ export default class ComponentSorter<NodeType extends BaseComponentNode> extends
       }
     }
     const addedNode = targetNode.addChildAt(sourceNode, index, { action: 'move-component' }) as NodeType;
-    this.triggerEndMoveEvent(addedNode);
+    addedNode && this.triggerEndMoveEvent(addedNode);
 
     return { addedNode, index };
   }

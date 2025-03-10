@@ -24,7 +24,7 @@ export interface SectorProperties {
  * @property {String} id Sector id, eg. `typography`
  * @property {String} name Sector name, eg. `Typography`
  * @property {Boolean} [open=true] Indicates the open state.
- * @property {Array<Object>} [properties=[]] Indicate an array of Property defintions.
+ * @property {Array<Object>} [properties=[]] Indicate an array of Property definitions.
  */
 export default class Sector extends Model<SectorProperties> {
   em: EditorModel;

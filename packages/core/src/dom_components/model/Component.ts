@@ -95,7 +95,7 @@ export const keyUpdateInside = ComponentsEvents.updateInside;
  * @property {String} [name=''] Name of the component. Will be used, for example, in Layers and badges
  * @property {Boolean} [removable=true] When `true` the component is removable from the canvas, default: `true`
  * @property {Boolean|String|Function} [draggable=true] Indicates if it's possible to drag the component inside others.
- *  You can also specify a query string to indentify elements,
+ *  You can also specify a query string to identify elements,
  *  eg. `'.some-class[title=Hello], [data-gjs-type=column]'` means you can drag the component only inside elements
  *  containing `some-class` class and `Hello` title, and `column` components. In the case of a function, target and destination components are passed as arguments, return a Boolean to indicate if the drag is possible. Default: `true`
  * @property {Boolean|String|Function} [droppable=true] Indicates if it's possible to drop other components inside. You can use

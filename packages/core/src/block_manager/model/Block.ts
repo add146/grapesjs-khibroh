@@ -62,7 +62,7 @@ export interface BlockProperties extends DraggableContent {
 
 /**
  * @property {String} label Block label, eg. `My block`
- * @property {String|Object} content The content of the block. Might be an HTML string or a [Component Defintion](/modules/Components.html#component-definition)
+ * @property {String|Object} content The content of the block. Might be an HTML string or a [Component Definition](/modules/Components.html#component-definition)
  * @property {String} [media=''] HTML string for the media/icon of the block, eg. `<svg ...`, `<img ...`, etc.
  * @property {String} [category=''] Block category, eg. `Basic blocks`
  * @property {Boolean} [activate=false] If true, triggers the `active` event on the dropped component.

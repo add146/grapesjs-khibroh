@@ -19,9 +19,43 @@ const { Parser } = editor;
 ```
 
 ## Available Events
+* `parse:html` On HTML parse, an object containing the input and the output of the parser is passed as an argument.
 
-*   `parse:html` - On HTML parse, an object containing the input and the output of the parser is passed as an argument
-*   `parse:css` - On CSS parse, an object containing the input and the output of the parser is passed as an argument
+```javascript
+editor.on('parse:html', ({ input, output }) => { ... });
+```
+
+* `parse:html:before` Event triggered before the HTML parsing starts. An object containing the input is passed as an argument.
+
+```javascript
+editor.on('parse:html:before', (options) => {
+  console.log('Parser input', options.input);
+  // You can also process the input and update `options.input`
+  options.input += '<div>Extra content</div>';
+});
+```
+
+* `parse:css` On CSS parse, an object containing the input and the output of the parser is passed as an argument.
+
+```javascript
+editor.on('parse:css', ({ input, output }) => { ... });
+```
+
+* `parse:css:before` Event triggered before the CSS parsing starts. An object containing the input is passed as an argument.
+
+```javascript
+editor.on('parse:css:before', (options) => {
+  console.log('Parser input', options.input);
+  // You can also process the input and update `options.input`
+  options.input += '.my-class { color: red; }';
+});
+```
+
+* `parse` Catch-all event for all the events mentioned above. An object containing all the available data about the triggered event is passed as an argument to the callback.
+
+```javascript
+editor.on('parse', ({ event, ... }) => { ... });
+```
 
 ## Methods
 

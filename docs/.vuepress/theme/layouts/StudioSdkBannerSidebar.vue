@@ -1,22 +1,23 @@
 <template>
   <a class="banner-sdk-sidebar" :href="getSdkDocsLink()">
     <h2 class="banner-sdk-sidebar__title">Supercharge Your GrapesJS Development 🚀</h2>
-    <img class="banner-sdk-sidebar__image" :src="$withBase('/studio-banner.jpg')" alt="Studio SDK">
+    <img class="banner-sdk-sidebar__image" :src="$withBase('/studio-banner.jpg')" alt="Studio SDK" />
     <p class="banner-sdk-sidebar__content">
-       Studio SDK is the next-level visual builder with advanced features, custom plugins, and seamless integration. Save time and build faster!
+      Studio SDK is the next-level visual builder with advanced features, custom plugins, and seamless integration. Save
+      time and build faster!
     </p>
   </a>
 </template>
 
 <script>
-import {  getSdkDocsLink } from './utils';
+import { getSdkDocsLink } from './utils';
 
 export default {
   methods: {
     getSdkDocsLink() {
       return getSdkDocsLink('sidebar');
-    }
-  }
+    },
+  },
 };
 </script>
 

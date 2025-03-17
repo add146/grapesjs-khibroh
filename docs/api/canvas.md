@@ -257,6 +257,7 @@ Set canvas zoom value
 ### Parameters
 
 *   `value` **[Number][9]** The zoom value, from 0 to 100
+*   `opts` **SetZoomOptions**  (optional, default `{}`)
 
 ### Examples
 

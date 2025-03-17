@@ -113,6 +113,32 @@ pageManager.remove(somePage);
 
 Returns **[Page]** Removed Page
 
+## move
+
+Move a page to a specific index in the pages collection.
+If the index is out of bounds, the page will not be moved.
+
+### Parameters
+
+*   `page` **([string][3] | [Page])** Page or page id to move.
+*   `opts` **[Object][2]?** Move options (optional, default `{}`)
+
+    *   `opts.at` **[number][4]?** The target index where the page should be moved.
+
+### Examples
+
+```javascript
+// Move a page to index 2
+const movedPage = pageManager.move('page-id', { at: 2 });
+if (movedPage) {
+  console.log('Page moved successfully:', movedPage);
+} else {
+  console.log('Page could not be moved.');
+}
+```
+
+Returns **(Page | [undefined][5])** The moved page, or `undefined` if the page does not exist or the index is out of bounds.
+
 ## get
 
 Get page by id
@@ -192,3 +218,7 @@ Returns **[Page]**&#x20;
 [2]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[4]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[5]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined

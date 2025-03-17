@@ -77,6 +77,20 @@ editor.on('command:run:my-command', ({ result, options }) => { ... });
 editor.on('command:stop:before:my-command', ({ options }) => { ... });
 ```
 
+* `command:call` Triggered on run or stop of a command.
+
+```javascript
+editor.on('command:call', ({ id, result, options, type }) => {
+ console.log('Command id', id, 'command result', result, 'call type', type);
+});
+```
+
+* `command:call:COMMAND-ID` Triggered on run or stop of a specific command.
+
+```javascript
+editor.on('command:call:my-command', ({ result, options, type }) => { ... });
+```
+
 ## Methods
 
 *   [add][2]

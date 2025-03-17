@@ -137,6 +137,7 @@ By setting override to specific properties, changes of those properties will be 
 ### Parameters
 
 *   `value` **([Boolean][3] | [String][1] | [Array][5]<[String][1]>)**&#x20;
+*   `options` **DynamicWatchersOptions**  (optional, default `{}`)
 
 ### Examples
 
@@ -280,7 +281,7 @@ Update attributes of the component
 ### Parameters
 
 *   `attrs` **[Object][2]** Key value attributes
-*   `opts` **SetAttrOptions**  (optional, default `{}`)
+*   `opts` **SetAttrOptions**  (optional, default `{skipWatcherUpdates:false,fromDataSource:false}`)
 *   `options` **[Object][2]** Options for the model update
 
 ### Examples

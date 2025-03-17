@@ -45,3 +45,6 @@ export enum ParserEvents {
   all = 'parse',
 }
 /**{END_EVENTS}*/
+
+// need this to avoid the TS documentation generator to break
+export default ParserEvents;

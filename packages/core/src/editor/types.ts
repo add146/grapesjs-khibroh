@@ -71,3 +71,6 @@ export enum EditorEvents {
   destroyed = 'destroyed',
 }
 /**{END_EVENTS}*/
+
+// need this to avoid the TS documentation generator to break
+export default EditorEvents;

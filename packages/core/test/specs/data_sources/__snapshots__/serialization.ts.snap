@@ -13,8 +13,10 @@ exports[`DataSource Serialization .getProjectData ComponentDataVariable 1`] = `
               {
                 "components": [
                   {
-                    "defaultValue": "default",
-                    "path": "component-serialization.id1.content",
+                    "dataResolver": {
+                      "defaultValue": "default",
+                      "path": "component-serialization.id1.content",
+                    },
                     "type": "data-variable",
                   },
                 ],

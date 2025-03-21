@@ -1,61 +1,123 @@
 import Component from '../../../dom_components/model/Component';
-import { ComponentDefinition, ComponentOptions } from '../../../dom_components/model/types';
+import {
+  ComponentDefinition as ComponentProperties,
+  ComponentDefinitionDefined,
+  ComponentOptions,
+  ToHTMLOptions,
+  ComponentAddType,
+} from '../../../dom_components/model/types';
 import { toLowerCase } from '../../../utils/mixins';
-import { DataCondition, DataConditionProps, DataConditionType } from './DataCondition';
+import { DataCondition, DataConditionOutputChangedEvent, DataConditionProps, DataConditionType } from './DataCondition';
 import { ConditionProps } from './DataConditionEvaluator';
+import { StringOperation } from './operators/StringOperator';
+import { ObjectAny } from '../../../common';
+import { DataConditionIfTrueType, DataConditionIfFalseType } from './constants';
+
+export type DataConditionDisplayType = typeof DataConditionIfTrueType | typeof DataConditionIfFalseType;
+
+export interface ComponentDataConditionProps extends ComponentProperties {
+  type: typeof DataConditionType;
+  dataResolver: DataConditionProps;
+}
 
 export default class ComponentDataCondition extends Component {
   dataResolver: DataCondition;
 
-  constructor(props: DataConditionProps, opt: ComponentOptions) {
-    const dataConditionInstance = new DataCondition(props, { em: opt.em });
-
-    super(
-      {
-        ...props,
-        type: DataConditionType,
-        components: dataConditionInstance.getDataValue(),
-        droppable: false,
+  get defaults(): ComponentDefinitionDefined {
+    return {
+      // @ts-ignore
+      ...super.defaults,
+      droppable: false,
+      type: DataConditionType,
+      dataResolver: {
+        condition: {
+          left: '',
+          operator: StringOperation.equalsIgnoreCase,
+          right: '',
+        },
       },
-      opt,
-    );
-    this.dataResolver = dataConditionInstance;
-    this.dataResolver.onValueChange = this.handleConditionChange.bind(this);
+      components: [
+        {
+          type: DataConditionIfTrueType,
+        },
+        {
+          type: DataConditionIfFalseType,
+        },
+      ],
+    };
+  }
+
+  constructor(props: ComponentDataConditionProps, opt: ComponentOptions) {
+    // @ts-ignore
+    super(props, opt);
+
+    const { condition } = props.dataResolver;
+    this.dataResolver = new DataCondition({ condition }, { em: opt.em });
+
+    this.listenToPropsChange();
+  }
+
+  isTrue() {
+    return this.dataResolver.isTrue();
   }
 
   getCondition() {
     return this.dataResolver.getCondition();
   }
 
-  getIfTrue() {
-    return this.dataResolver.getIfTrue();
+  getIfTrueContent(): Component | undefined {
+    return this.components().at(0);
   }
 
-  getIfFalse() {
-    return this.dataResolver.getIfFalse();
+  getIfFalseContent(): Component | undefined {
+    return this.components().at(1);
   }
 
-  private handleConditionChange() {
-    this.components(this.dataResolver.getDataValue());
-  }
-
-  static isComponent(el: HTMLElement) {
-    return toLowerCase(el.tagName) === DataConditionType;
+  getOutputContent(): Component | undefined {
+    return this.isTrue() ? this.getIfTrueContent() : this.getIfFalseContent();
   }
 
   setCondition(newCondition: ConditionProps) {
     this.dataResolver.setCondition(newCondition);
   }
 
-  setIfTrue(newIfTrue: any) {
-    this.dataResolver.setIfTrue(newIfTrue);
+  setIfTrueComponents(content: ComponentAddType) {
+    this.setComponentsAtIndex(0, content);
   }
 
-  setIfFalse(newIfFalse: any) {
-    this.dataResolver.setIfFalse(newIfFalse);
+  setIfFalseComponents(content: ComponentAddType) {
+    this.setComponentsAtIndex(1, content);
   }
 
-  toJSON(): ComponentDefinition {
-    return this.dataResolver.toJSON();
+  getInnerHTML(opts?: ToHTMLOptions): string {
+    return this.getOutputContent()?.getInnerHTML(opts) ?? '';
+  }
+
+  private setComponentsAtIndex(index: number, newContent: ComponentAddType) {
+    const component = this.components().at(index);
+    component?.components(newContent);
+  }
+
+  private listenToPropsChange() {
+    this.on('change:dataResolver', () => {
+      this.dataResolver.set(this.get('dataResolver'));
+    });
+  }
+
+  toJSON(opts?: ObjectAny): ComponentProperties {
+    const json = super.toJSON(opts);
+    const dataResolver = this.dataResolver.toJSON();
+    delete dataResolver.type;
+    delete dataResolver.ifTrue;
+    delete dataResolver.ifFalse;
+
+    return {
+      ...json,
+      dataResolver,
+    };
+  }
+
+  static isComponent(el: HTMLElement) {
+    return toLowerCase(el.tagName) === DataConditionType;
   }
 }

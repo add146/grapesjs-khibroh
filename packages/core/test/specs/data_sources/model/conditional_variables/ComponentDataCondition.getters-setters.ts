@@ -1,22 +1,32 @@
-import { Component, DataSourceManager, Editor } from '../../../../../src';
+import { DataSourceManager } from '../../../../../src';
 import { DataVariableType } from '../../../../../src/data_sources/model/DataVariable';
 import ComponentDataCondition from '../../../../../src/data_sources/model/conditional_variables/ComponentDataCondition';
 import { DataConditionType } from '../../../../../src/data_sources/model/conditional_variables/DataCondition';
 import { AnyTypeOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/AnyTypeOperator';
-import { NumberOperation } from '../../../../../src/data_sources/model/conditional_variables/operators/NumberOperator';
 import ComponentDataConditionView from '../../../../../src/data_sources/view/ComponentDataConditionView';
 import ComponentWrapper from '../../../../../src/dom_components/model/ComponentWrapper';
 import EditorModel from '../../../../../src/editor/model/Editor';
-import { setupTestEditor } from '../../../../common';
+import {
+  ifFalseText,
+  setupTestEditor,
+  ifTrueComponentDef,
+  ifFalseComponentDef,
+  newIfTrueText,
+  ifTrueText,
+  FALSE_CONDITION,
+  TRUE_CONDITION,
+  newIfFalseText,
+  newIfTrueComponentDef,
+  newIfFalseComponentDef,
+} from '../../../../common';
 
 describe('ComponentDataCondition Setters', () => {
-  let editor: Editor;
   let em: EditorModel;
   let dsm: DataSourceManager;
   let cmpRoot: ComponentWrapper;
 
   beforeEach(() => {
-    ({ editor, em, dsm, cmpRoot } = setupTestEditor());
+    ({ em, dsm, cmpRoot } = setupTestEditor());
   });
 
   afterEach(() => {
@@ -26,66 +36,42 @@ describe('ComponentDataCondition Setters', () => {
   it('should update the condition using setCondition', () => {
     const component = cmpRoot.append({
       type: DataConditionType,
-      condition: {
-        left: 0,
-        operator: NumberOperation.greaterThan,
-        right: -1,
-      },
-      ifTrue: '<h1>some text</h1>',
-      ifFalse: '<h1>false text</h1>',
+      dataResolver: { condition: TRUE_CONDITION },
+      components: [ifTrueComponentDef, ifFalseComponentDef],
     })[0] as ComponentDataCondition;
 
-    const newCondition = {
-      left: 1,
-      operator: NumberOperation.lessThan,
-      right: 0,
-    };
-
-    component.setCondition(newCondition);
-    expect(component.getCondition()).toEqual(newCondition);
-    expect(component.getInnerHTML()).toBe('<h1>false text</h1>');
+    component.setCondition(FALSE_CONDITION);
+    expect(component.getCondition()).toEqual(FALSE_CONDITION);
+    expect(component.getInnerHTML()).toContain(ifFalseText);
+    expect(component.getEl()?.innerHTML).toContain(ifFalseText);
   });
 
-  it('should update the ifTrue value using setIfTrue', () => {
+  it('should update the ifTrue value using setIfTrueComponents', () => {
     const component = cmpRoot.append({
       type: DataConditionType,
-      condition: {
-        left: 0,
-        operator: NumberOperation.greaterThan,
-        right: -1,
-      },
-      ifTrue: '<h1>some text</h1>',
-      ifFalse: '<h1>false text</h1>',
+      dataResolver: { condition: TRUE_CONDITION },
+      components: [ifTrueComponentDef, ifFalseComponentDef],
     })[0] as ComponentDataCondition;
 
-    const newIfTrue = '<h1>new true text</h1>';
-    component.setIfTrue(newIfTrue);
-    expect(component.getIfTrue()).toEqual(newIfTrue);
-    expect(component.getInnerHTML()).toBe(newIfTrue);
+    component.setIfTrueComponents(newIfTrueComponentDef.components);
+    expect(JSON.parse(JSON.stringify(component.getIfTrueContent()))).toEqual(newIfTrueComponentDef);
+    expect(component.getInnerHTML()).toContain(newIfTrueText);
+    expect(component.getEl()?.innerHTML).toContain(newIfTrueText);
   });
 
-  it('should update the ifFalse value using setIfFalse', () => {
+  it('should update the ifFalse value using setIfFalseComponents', () => {
     const component = cmpRoot.append({
       type: DataConditionType,
-      condition: {
-        left: 0,
-        operator: NumberOperation.greaterThan,
-        right: -1,
-      },
-      ifTrue: '<h1>some text</h1>',
-      ifFalse: '<h1>false text</h1>',
+      dataResolver: { condition: TRUE_CONDITION },
+      components: [ifTrueComponentDef, ifFalseComponentDef],
     })[0] as ComponentDataCondition;
 
-    const newIfFalse = '<h1>new false text</h1>';
-    component.setIfFalse(newIfFalse);
-    expect(component.getIfFalse()).toEqual(newIfFalse);
+    component.setIfFalseComponents(newIfFalseComponentDef.components);
+    expect(JSON.parse(JSON.stringify(component.getIfFalseContent()))).toEqual(newIfFalseComponentDef);
 
-    component.setCondition({
-      left: 0,
-      operator: NumberOperation.lessThan,
-      right: -1,
-    });
-    expect(component.getInnerHTML()).toBe(newIfFalse);
+    component.setCondition(FALSE_CONDITION);
+    expect(component.getInnerHTML()).toContain(newIfFalseText);
+    expect(component.getEl()?.innerHTML).toContain(newIfFalseText);
   });
 
   it('should update the data sources and re-evaluate the condition', () => {
@@ -100,57 +86,54 @@ describe('ComponentDataCondition Setters', () => {
 
     const component = cmpRoot.append({
       type: DataConditionType,
-      condition: {
-        left: {
-          type: DataVariableType,
-          path: 'ds1.left_id.left',
-        },
-        operator: AnyTypeOperation.equals,
-        right: {
-          type: DataVariableType,
-          path: 'ds1.right_id.right',
+      dataResolver: {
+        condition: {
+          left: {
+            type: DataVariableType,
+            path: 'ds1.left_id.left',
+          },
+          operator: AnyTypeOperation.equals,
+          right: {
+            type: DataVariableType,
+            path: 'ds1.right_id.right',
+          },
         },
       },
-      ifTrue: '<h1>True value</h1>',
-      ifFalse: '<h1>False value</h1>',
+      components: [ifTrueComponentDef, ifFalseComponentDef],
     })[0] as ComponentDataCondition;
 
-    expect(component.getInnerHTML()).toBe('<h1>True value</h1>');
+    expect(component.getInnerHTML()).toContain(ifTrueText);
 
     changeDataSourceValue(dsm, 'Different value');
-    expect(component.getInnerHTML()).toBe('<h1>False value</h1>');
+    expect(component.getInnerHTML()).toContain(ifFalseText);
+    expect(component.getEl()?.innerHTML).toContain(ifFalseText);
 
     changeDataSourceValue(dsm, 'Name1');
-    expect(component.getInnerHTML()).toBe('<h1>True value</h1>');
+    expect(component.getInnerHTML()).toContain(ifTrueText);
+    expect(component.getEl()?.innerHTML).toContain(ifTrueText);
   });
 
   it('should re-render the component when condition, ifTrue, or ifFalse changes', () => {
     const component = cmpRoot.append({
       type: DataConditionType,
-      condition: {
-        left: 0,
-        operator: NumberOperation.greaterThan,
-        right: -1,
-      },
-      ifTrue: '<h1>some text</h1>',
-      ifFalse: '<h1>false text</h1>',
+      dataResolver: { condition: TRUE_CONDITION },
+      components: [ifTrueComponentDef, ifFalseComponentDef],
     })[0] as ComponentDataCondition;
 
     const componentView = component.getView() as ComponentDataConditionView;
 
-    component.setIfTrue('<h1>new true text</h1>');
-    expect(componentView.el.innerHTML).toContain('new true text');
+    component.setIfTrueComponents(newIfTrueComponentDef);
 
-    component.setIfFalse('<h1>new false text</h1>');
-    component.setCondition({
-      left: 0,
-      operator: NumberOperation.lessThan,
-      right: -1,
-    });
-    expect(componentView.el.innerHTML).toContain('new false text');
+    expect(component.getInnerHTML()).toContain(newIfTrueText);
+    expect(componentView.el.innerHTML).toContain(newIfTrueText);
+
+    component.setIfFalseComponents(newIfFalseComponentDef);
+    component.setCondition(FALSE_CONDITION);
+    expect(component.getInnerHTML()).toContain(newIfFalseText);
+    expect(componentView.el.innerHTML).toContain(newIfFalseText);
   });
 });
 
-function changeDataSourceValue(dsm: DataSourceManager, newValue: string) {
+export const changeDataSourceValue = (dsm: DataSourceManager, newValue: string) => {
   dsm.get('ds1').getRecord('left_id')?.set('left', newValue);
-}
+};

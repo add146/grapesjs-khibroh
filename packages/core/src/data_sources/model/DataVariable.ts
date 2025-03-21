@@ -4,7 +4,7 @@ import EditorModel from '../../editor/model/Editor';
 export const DataVariableType = 'data-variable' as const;
 
 export interface DataVariableProps {
-  type: typeof DataVariableType;
+  type?: typeof DataVariableType;
   path: string;
   defaultValue?: string;
 }

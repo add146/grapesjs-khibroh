@@ -39,8 +39,7 @@ describe('DataSource Storage', () => {
     test('ComponentDataVariable', () => {
       const dataVariable = {
         type: DataVariableType,
-        defaultValue: 'default',
-        path: `${storedDataSource.id}.id1.content`,
+        dataResolver: { defaultValue: 'default', path: `${storedDataSource.id}.id1.content` },
       };
 
       cmpRoot.append({
@@ -87,9 +86,8 @@ describe('DataSource Storage', () => {
                     {
                       components: [
                         {
-                          defaultValue: 'default',
-                          path: `${storedDataSource.id}.id1.content`,
-                          type: 'data-variable',
+                          type: DataVariableType,
+                          dataResolver: { defaultValue: 'default', path: `${storedDataSource.id}.id1.content` },
                         },
                       ],
                       tagName: 'h1',

@@ -23,8 +23,10 @@ exports[`DataSource Storage .getProjectData ComponentDataVariable 1`] = `
               {
                 "components": [
                   {
-                    "defaultValue": "default",
-                    "path": "component-storage.id1.content",
+                    "dataResolver": {
+                      "defaultValue": "default",
+                      "path": "component-storage.id1.content",
+                    },
                     "type": "data-variable",
                   },
                 ],
@@ -84,8 +86,10 @@ exports[`DataSource Storage .loadProjectData ComponentDataVariable 1`] = `
               {
                 "components": [
                   {
-                    "defaultValue": "default",
-                    "path": "component-storage.id1.content",
+                    "dataResolver": {
+                      "defaultValue": "default",
+                      "path": "component-storage.id1.content",
+                    },
                     "type": "data-variable",
                   },
                 ],

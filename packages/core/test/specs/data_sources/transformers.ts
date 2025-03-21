@@ -41,8 +41,7 @@ describe('DataSource Transformers', () => {
       components: [
         {
           type: DataVariableType,
-          defaultValue: 'default',
-          path: 'test-data-source.id1.content',
+          dataResolver: { defaultValue: 'default', path: 'test-data-source.id1.content' },
         },
       ],
     })[0];
@@ -85,8 +84,7 @@ describe('DataSource Transformers', () => {
       components: [
         {
           type: DataVariableType,
-          defaultValue: 'default',
-          path: 'test-data-source.id1.content',
+          dataResolver: { defaultValue: 'default', path: 'test-data-source.id1.content' },
         },
       ],
     })[0];

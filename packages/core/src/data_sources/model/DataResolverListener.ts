@@ -4,7 +4,11 @@ import { Model } from '../../common';
 import EditorModel from '../../editor/model/Editor';
 import DataVariable, { DataVariableType } from './DataVariable';
 import { DataResolver } from '../types';
-import { DataCondition, DataConditionType } from './conditional_variables/DataCondition';
+import {
+  DataCondition,
+  DataConditionOutputChangedEvent,
+  DataConditionType,
+} from './conditional_variables/DataCondition';
 import { DataCollectionVariableType } from './data_collection/constants';
 import DataCollectionVariable from './data_collection/DataCollectionVariable';
 
@@ -64,12 +68,13 @@ export default class DataResolverListener {
   }
 
   private listenToConditionalVariable(dataVariable: DataCondition): ListenerWithCallback[] {
-    const { em } = this;
-    const dataListeners = dataVariable.getDependentDataVariables().flatMap((dataVariable) => {
-      return this.listenToDataVariable(new DataVariable(dataVariable, { em }));
-    });
-
-    return dataListeners;
+    return [
+      {
+        obj: dataVariable,
+        event: DataConditionOutputChangedEvent,
+        callback: this.onChange,
+      },
+    ];
   }
 
   private listenToDataVariable(dataVariable: DataVariable): ListenerWithCallback[] {

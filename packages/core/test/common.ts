@@ -1,4 +1,11 @@
+import { DataSourceManager } from '../src';
 import CanvasEvents from '../src/canvas/types';
+import { ObjectAny } from '../src/common';
+import {
+  DataConditionIfFalseType,
+  DataConditionIfTrueType,
+} from '../src/data_sources/model/conditional_variables/constants';
+import { NumberOperation } from '../src/data_sources/model/conditional_variables/operators/NumberOperator';
 import Editor from '../src/editor';
 import { EditorConfig } from '../src/editor/config/config';
 import EditorModel from '../src/editor/model/Editor';
@@ -97,3 +104,56 @@ export function filterObjectForSnapshot(obj: any, parentKey: string = ''): any {
 
   return result;
 }
+
+const baseComponent = {
+  type: 'text',
+  tagName: 'h1',
+};
+
+const createContent = (content: string) => ({
+  ...baseComponent,
+  content,
+});
+
+/**
+ * Creates a component definition for a conditional component (ifTrue or ifFalse).
+ * @param type - The component type (e.g., DataConditionIfTrueType).
+ * @param content - The text content.
+ * @returns The component definition.
+ */
+const createConditionalComponentDef = (type: string, content: string) => ({
+  type,
+  components: [createContent(content)],
+});
+
+export const ifTrueText = 'true text';
+export const newIfTrueText = 'new true text';
+export const ifFalseText = 'false text';
+export const newIfFalseText = 'new false text';
+
+export const ifTrueComponentDef = createConditionalComponentDef(DataConditionIfTrueType, ifTrueText);
+export const newIfTrueComponentDef = createConditionalComponentDef(DataConditionIfTrueType, newIfTrueText);
+export const ifFalseComponentDef = createConditionalComponentDef(DataConditionIfFalseType, ifFalseText);
+export const newIfFalseComponentDef = createConditionalComponentDef(DataConditionIfFalseType, newIfFalseText);
+
+export function isObjectContained(received: ObjectAny, expected: ObjectAny): boolean {
+  return Object.keys(expected).every((key) => {
+    if (typeof expected[key] === 'object' && expected[key] !== null) {
+      return isObjectContained(received[key], expected[key]);
+    }
+
+    return received?.[key] === expected?.[key];
+  });
+}
+
+export const TRUE_CONDITION = {
+  left: 1,
+  operator: NumberOperation.greaterThan,
+  right: 0,
+};
+
+export const FALSE_CONDITION = {
+  left: 0,
+  operator: NumberOperation.lessThan,
+  right: -1,
+};

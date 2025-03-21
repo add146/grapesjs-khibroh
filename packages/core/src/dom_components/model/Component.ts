@@ -1378,8 +1378,9 @@ export default class Component extends StyleableModel<ComponentProperties> {
       cloned.set(keySymbol, 0);
       cloned.set(keySymbols, 0);
     } else if (symbol) {
+      const mainSymbolInstances = getSymbolInstances(symbol) ?? [];
       // Contains already a reference to a symbol
-      symbol.set(keySymbols, [...getSymbolInstances(symbol)!, cloned]);
+      symbol.set(keySymbols, [...mainSymbolInstances!, cloned]);
       initSymbol(cloned);
     } else if (opt.symbol) {
       // Request to create a symbol

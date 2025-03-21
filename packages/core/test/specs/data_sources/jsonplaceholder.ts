@@ -89,8 +89,7 @@ describe('JsonPlaceholder Usage', () => {
               components: [
                 {
                   type: DataVariableType,
-                  defaultValue: 'default',
-                  path: `comments.${record?.id}.name`,
+                  dataResolver: { defaultValue: 'default', path: `comments.${record?.id}.name` },
                 },
               ],
             },
@@ -99,8 +98,7 @@ describe('JsonPlaceholder Usage', () => {
               components: [
                 {
                   type: DataVariableType,
-                  defaultValue: 'default',
-                  path: `comments.${record?.id}.id`,
+                  dataResolver: { defaultValue: 'default', path: `comments.${record?.id}.id` },
                 },
               ],
             },
@@ -109,8 +107,7 @@ describe('JsonPlaceholder Usage', () => {
               components: [
                 {
                   type: DataVariableType,
-                  defaultValue: 'default',
-                  path: `comments.${record?.id}.body`,
+                  dataResolver: { defaultValue: 'default', path: `comments.${record?.id}.body` },
                 },
               ],
             },

@@ -1,6 +1,6 @@
 import { DataVariableProps } from '../DataVariable';
 import EditorModel from '../../../editor/model/Editor';
-import { evaluateVariable, isDataVariable } from '../utils';
+import { resolveDynamicValue, isDataVariable } from '../../utils';
 import { ExpressionProps, LogicGroupProps } from './DataCondition';
 import { LogicalGroupEvaluator } from './LogicalGroupEvaluator';
 import { Operator } from './operators/BaseOperator';
@@ -39,9 +39,10 @@ export class DataConditionEvaluator extends Model<DataConditionEvaluatorProps> {
 
     if (this.isExpression(condition)) {
       const { left, operator, right } = condition;
-      const evaluateLeft = evaluateVariable(left, this.em);
-      const evaluateRight = evaluateVariable(right, this.em);
+      const evaluateLeft = resolveDynamicValue(left, this.em);
+      const evaluateRight = resolveDynamicValue(right, this.em);
       const op = this.getOperator(evaluateLeft, operator);
+      if (!op) return false;
 
       const evaluated = op.evaluate(evaluateLeft, evaluateRight);
       return evaluated;
@@ -54,7 +55,7 @@ export class DataConditionEvaluator extends Model<DataConditionEvaluatorProps> {
   /**
    * Factory method for creating operators based on the data type.
    */
-  private getOperator(left: any, operator: string): Operator<DataConditionOperation> {
+  private getOperator(left: any, operator: string | undefined): Operator<DataConditionOperation> | undefined {
     const em = this.em;
 
     if (this.isOperatorInEnum(operator, AnyTypeOperation)) {
@@ -64,7 +65,9 @@ export class DataConditionEvaluator extends Model<DataConditionEvaluatorProps> {
     } else if (typeof left === 'string') {
       return new StringOperator(operator as StringOperation, { em });
     }
-    throw new Error(`Unsupported data type: ${typeof left}`);
+
+    this.em?.logError(`Unsupported data type: ${typeof left}`);
+    return;
   }
 
   getDependentDataVariables(): DataVariableProps[] {
@@ -95,7 +98,7 @@ export class DataConditionEvaluator extends Model<DataConditionEvaluatorProps> {
     return condition && typeof condition.left !== 'undefined' && typeof condition.operator === 'string';
   }
 
-  private isOperatorInEnum(operator: string, enumObject: any): boolean {
+  private isOperatorInEnum(operator: string | undefined, enumObject: any): boolean {
     return Object.values(enumObject).includes(operator);
   }
 

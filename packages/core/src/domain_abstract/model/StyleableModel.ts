@@ -15,7 +15,7 @@ import {
   getDataResolverInstanceValue,
   isDataResolver,
   isDataResolverProps,
-} from '../../data_sources/model/utils';
+} from '../../data_sources/utils';
 import { DataResolver } from '../../data_sources/types';
 
 export type StyleProps = Record<string, string | string[] | DataVariableProps | DataConditionProps>;

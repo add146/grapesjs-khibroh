@@ -53,8 +53,7 @@ describe('DataSource Serialization', () => {
       components: [
         {
           type: DataVariableType,
-          defaultValue: 'default',
-          path: `${componentDataSource.id}.id1.content`,
+          dataResolver: { defaultValue: 'default', path: `${componentDataSource.id}.id1.content` },
         },
       ],
     })[0];
@@ -118,8 +117,7 @@ describe('DataSource Serialization', () => {
     test('ComponentDataVariable', () => {
       const dataVariable = {
         type: DataVariableType,
-        defaultValue: 'default',
-        path: `${componentDataSource.id}.id1.content`,
+        dataResolver: { defaultValue: 'default', path: `${componentDataSource.id}.id1.content` },
       };
 
       cmpRoot.append({
@@ -309,9 +307,9 @@ describe('DataSource Serialization', () => {
                     {
                       components: [
                         {
-                          path: 'component-serialization.id1.content',
-                          type: 'data-variable',
                           value: 'default',
+                          type: DataVariableType,
+                          dataResolver: { path: 'component-serialization.id1.content' },
                         },
                       ],
                       tagName: 'h1',
@@ -403,7 +401,7 @@ describe('DataSource Serialization', () => {
             style: {
               color: {
                 path: 'colors-data.id1.color',
-                type: 'data-variable',
+                type: DataVariableType,
                 defaultValue: 'black',
               },
             },

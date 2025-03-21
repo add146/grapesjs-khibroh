@@ -30,8 +30,10 @@ describe('ComponentDataVariable - setPath and setDefaultValue', () => {
   test('component updates when path is changed using setPath', () => {
     const cmp = cmpRoot.append({
       type: DataVariableType,
-      defaultValue: 'default',
-      path: 'ds_id.id1.name',
+      dataResolver: {
+        defaultValue: 'default',
+        path: 'ds_id.id1.name',
+      },
     })[0] as ComponentDataVariable;
 
     expect(cmp.getEl()?.innerHTML).toContain('Name1');
@@ -45,8 +47,7 @@ describe('ComponentDataVariable - setPath and setDefaultValue', () => {
   test('component updates when default value is changed using setDefaultValue', () => {
     const cmp = cmpRoot.append({
       type: DataVariableType,
-      defaultValue: 'default',
-      path: 'unknown.id1.name',
+      dataResolver: { defaultValue: 'default', path: 'unknown.id1.name' },
     })[0] as ComponentDataVariable;
 
     expect(cmp.getEl()?.innerHTML).toContain('default');
@@ -60,8 +61,7 @@ describe('ComponentDataVariable - setPath and setDefaultValue', () => {
   test('component updates correctly after path and default value are changed', () => {
     const cmp = cmpRoot.append({
       type: DataVariableType,
-      defaultValue: 'default',
-      path: 'ds_id.id1.name',
+      dataResolver: { defaultValue: 'default', path: 'ds_id.id1.name' },
     })[0] as ComponentDataVariable;
 
     expect(cmp.getEl()?.innerHTML).toContain('Name1');
@@ -78,8 +78,7 @@ describe('ComponentDataVariable - setPath and setDefaultValue', () => {
   test('component updates correctly after path is changed and data is updated', () => {
     const cmp = cmpRoot.append({
       type: DataVariableType,
-      defaultValue: 'default',
-      path: 'ds_id.id1.name',
+      dataResolver: { defaultValue: 'default', path: 'ds_id.id1.name' },
     })[0] as ComponentDataVariable;
 
     expect(cmp.getEl()?.innerHTML).toContain('Name1');

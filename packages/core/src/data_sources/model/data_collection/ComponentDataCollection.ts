@@ -7,7 +7,7 @@ import { isObject, serialize, toLowerCase } from '../../../utils/mixins';
 import DataResolverListener from '../DataResolverListener';
 import DataSource from '../DataSource';
 import DataVariable, { DataVariableProps, DataVariableType } from '../DataVariable';
-import { isDataVariable } from '../utils';
+import { ensureComponentInstance, isDataVariable } from '../../utils';
 import { DataCollectionType, keyCollectionDefinition, keyCollectionsStateMap, keyIsCollectionItem } from './constants';
 import {
   ComponentDataCollectionProps,
@@ -200,12 +200,9 @@ export default class ComponentDataCollection extends Component {
       };
 
       if (isFirstItem) {
-        const componentType = (componentDef?.type as string) || 'default';
-        let type = this.em.Components.getType(componentType) || this.em.Components.getType('default');
-        const Model = type.model;
-        symbolMain = new Model(
+        symbolMain = ensureComponentInstance(
           {
-            ...serialize(componentDef),
+            ...componentDef,
             draggable: false,
             removable: false,
           },

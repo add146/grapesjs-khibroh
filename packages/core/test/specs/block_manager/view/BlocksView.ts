@@ -52,6 +52,7 @@ describe('BlocksView', () => {
           ],
         },
       });
+      em.initModules();
       model = em.Blocks.blocks;
       view = new BlocksView({ collection: model }, { em });
       document.body.innerHTML = '<div id="fixtures"></div>';

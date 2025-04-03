@@ -61,24 +61,22 @@ export default class BlockManager extends ItemManagerModule<BlockManagerConfig, 
   storageKey = '';
 
   constructor(em: EditorModel) {
-    super(em, 'BlockManager', new Blocks(em.config.blockManager?.blocks || [], { em }), BlocksEvents, defConfig());
-
-    // Global blocks collection
+    super(em, 'BlockManager', new Blocks([], { em }), BlocksEvents, defConfig());
     this.blocks = this.all;
     this.blocksVisible = new Blocks(this.blocks.models, { em });
-    this.categories = new Categories([], {
-      em,
-      events: { update: BlocksEvents.categoryUpdate },
-    });
-
-    // Setup the sync between the global and public collections
-    this.blocks.on('add', (model) => this.blocksVisible.add(model));
-    this.blocks.on('remove', (model) => this.blocksVisible.remove(model));
-    this.blocks.on('reset', (coll) => this.blocksVisible.reset(coll.models));
-
+    this.categories = new Categories([], { em, events: { update: BlocksEvents.categoryUpdate } });
     this.__onAllEvent = debounce(() => this.__trgCustom(), 0);
 
     return this;
+  }
+
+  onInit() {
+    const { config, blocks, blocksVisible } = this;
+    blocks.add(config.blocks || []);
+    // Setup the sync between the global and public collections
+    blocks.on('add', (model) => blocksVisible.add(model));
+    blocks.on('remove', (model) => blocksVisible.remove(model));
+    blocks.on('reset', (coll) => blocksVisible.reset(coll.models));
   }
 
   /**

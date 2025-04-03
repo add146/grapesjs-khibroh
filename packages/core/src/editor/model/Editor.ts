@@ -322,6 +322,10 @@ export default class EditorModel extends Model {
     return !!this.get('isShallow');
   }
 
+  initModules() {
+    this.modules.forEach((module) => module.onInit());
+  }
+
   /**
    * Get configurations
    * @param  {string} [prop] Property name

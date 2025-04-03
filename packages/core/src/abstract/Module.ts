@@ -8,6 +8,7 @@ import { createId, isDef, deepMerge } from '../utils/mixins';
 export interface IModule<TConfig extends ModuleConfig = ModuleConfig> extends IBaseModule<TConfig> {
   destroy(): void;
   postLoad(key: any): any;
+  onInit(): void;
   onLoad?(): void;
   name: string;
   postRender?(view: any): void;
@@ -72,6 +73,7 @@ export default abstract class Module<T extends ModuleConfig = ModuleConfig> impl
 
   render(opts?: any): HTMLElement | JQuery<HTMLElement> | void {}
   postLoad(key: any): void {}
+  onInit(): void {}
 
   get name(): string {
     return this._name;

@@ -68,6 +68,7 @@ export const grapesjs = {
     };
     const editor = new Editor(initConfig, { $ });
     const em = editor.getModel();
+    em.initModules();
 
     // Load plugins
     initConfig.plugins!.forEach((pluginId) => {

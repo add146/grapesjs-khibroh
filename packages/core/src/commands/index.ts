@@ -40,8 +40,8 @@ import CommandAbstract, { Command, CommandOptions, CommandObject, CommandFunctio
 import defConfig, { CommandsConfig } from './config/config';
 import { Module } from '../abstract';
 import Component, { eventDrag } from '../dom_components/model/Component';
-import Editor from '../editor/model/Editor';
-import { ObjectAny } from '../common';
+import type Editor from '../editor/model/Editor';
+import type { ObjectAny } from '../common';
 import CommandsEvents from './types';
 
 export type CommandEvent = 'run' | 'stop' | `run:${string}` | `stop:${string}` | `abort:${string}`;

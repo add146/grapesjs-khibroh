@@ -84,6 +84,26 @@ export enum ComponentsEvents {
   render = 'component:render',
 
   /**
+   * @event `component:resize` Component resized. This event is triggered when the component is resized in the canvas.
+   * @example
+   * editor.on('component:resize', ({ component, type }) => {
+   *  // type can be 'start', 'move', or 'end'
+   * });
+   */
+  resize = 'component:resize',
+
+  /**
+   * @event `component:resize:init` Component resize init. This event allows you to control the resizer options dinamically.
+   * @example
+   * editor.on('component:resize:init', (opts) => {
+   *  if (opts.component.is('someType')) {
+   *   opts.resizable = true; // Update resizable options
+   *  }
+   * });
+   */
+  resizeInit = 'component:resize:init',
+
+  /**
    * @event `symbol:main:add` Added new main symbol.
    * @example
    * editor.on('symbol:main:add', ({ component }) => { ... });

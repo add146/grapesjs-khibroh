@@ -625,8 +625,13 @@ describe('Collection component', () => {
         type: DataCollectionType,
         components: [
           {
-            ...childCmpDef,
-            components: [childCmpDef, childCmpDef],
+            type: DataCollectionItemType,
+            components: [
+              {
+                ...childCmpDef,
+                components: [childCmpDef, childCmpDef],
+              },
+            ],
           },
         ],
         dataResolver: {
@@ -656,7 +661,7 @@ describe('Collection component', () => {
           path: 'user',
         },
       };
-      firstItemCmp.components(newChildDefinition);
+      firstItemCmp.components().at(0).components(newChildDefinition);
       expect(cmp.toJSON()).toMatchSnapshot(`Collection with grandchildren`);
     });
 

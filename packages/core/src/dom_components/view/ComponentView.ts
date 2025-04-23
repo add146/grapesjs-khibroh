@@ -528,10 +528,11 @@ TComp> {
   }
 
   _setData() {
-    const { model } = this;
+    const { model, el } = this;
     const collection = model.components();
     const view = this;
     this.$el.data({ model, collection, view });
+    setViewEl(el, this);
   }
 
   _createElement(tagName: string): Node {

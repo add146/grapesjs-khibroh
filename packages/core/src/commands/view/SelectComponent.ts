@@ -3,7 +3,7 @@ import Component from '../../dom_components/model/Component';
 import Toolbar from '../../dom_components/model/Toolbar';
 import ToolbarView from '../../dom_components/view/ToolbarView';
 import { isDoc, isTaggableNode, isVisible, off, on } from '../../utils/dom';
-import { getComponentModel, getComponentView, getUnitFromValue, getViewEl, hasWin, isObject } from '../../utils/mixins';
+import { getComponentModel, getComponentView, getUnitFromValue, hasWin, isObject } from '../../utils/mixins';
 import { CommandObject } from './CommandAbstract';
 import { CanvasSpotBuiltInTypes } from '../../canvas/model/CanvasSpot';
 import { ResizerOptions } from '../../utils/Resizer';
@@ -147,7 +147,7 @@ export default {
       component.views?.forEach((view) => {
         const el = view.el;
         const pos = this.getElementPos(el);
-        result = { el, pos, component, view: getViewEl(el) };
+        result = { el, pos, component, view };
 
         if (el.ownerDocument === this.currentDoc) {
           this.elHovered = result;
@@ -178,12 +178,12 @@ export default {
     const component = em.getSelected();
     const currentFrame = em.getCurrentFrame();
     const view = component && component.getView(currentFrame?.model);
-    let el = view && view.el;
+    let el = view?.el;
     let result = {};
 
     if (el && isVisible(el)) {
       const pos = this.getElementPos(el);
-      result = { el, pos, component, view: getViewEl(el) };
+      result = { el, pos, component, view };
     }
 
     this.elSelected = result;

@@ -429,14 +429,23 @@ export default class FrameView extends ModuleView<Frame, HTMLIFrameElement> {
     const { view } = em?.Components?.getType('wrapper') || {};
 
     if (!view) return;
-    this.wrapper = new view({
-      model: root,
-      config: {
-        ...root.config,
-        em,
+    if (typeof config.customRenderer === 'function') {
+      this.wrapper = config.customRenderer({
+        editor: em.Editor,
+        frame: model,
+        window: win,
         frameView: this,
-      },
-    }).render();
+      });
+    } else {
+      this.wrapper = new view({
+        model: root,
+        config: {
+          ...root.config,
+          em,
+          frameView: this,
+        },
+      }).render();
+    }
     append(body, this.wrapper?.el!);
     append(
       body,

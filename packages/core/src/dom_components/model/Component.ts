@@ -323,7 +323,7 @@ export default class Component extends StyleableModel<ComponentProperties> {
 
     // Register global updates for collection properties
     ['classes', 'traits', 'components'].forEach((name) => {
-      const events = `add remove ${name !== 'components' ? 'change' : ''}`;
+      const events = `add remove reset ${name !== 'components' ? 'change' : ''}`;
       this.listenTo(this.get(name), events.trim(), (...args) => this.emitUpdate(name, ...args));
     });
 

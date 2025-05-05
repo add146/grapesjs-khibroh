@@ -5,6 +5,14 @@ import { CanvasSpotBuiltInTypes } from '../model/CanvasSpot';
 import Frame from '../model/Frame';
 import FrameView from '../view/FrameView';
 
+export interface CustomRendererProps {
+  editor: Editor;
+  frame: Frame;
+  window: Window;
+  frameView: FrameView;
+  onMount: (view: ComponentView) => void;
+}
+
 export interface CanvasConfig {
   stylePrefix?: string;
 
@@ -118,7 +126,7 @@ export interface CanvasConfig {
    *   reactRoot.render(<React.StrictMode><RenderChildren components={[root]}/></React.StrictMode>);
    * }
    */
-  customRenderer?: (options: { editor: Editor; frame: Frame; window: Window; frameView: FrameView }) => ComponentView;
+  customRenderer?: (props: CustomRendererProps) => void;
 }
 
 const config: () => CanvasConfig = () => ({

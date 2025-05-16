@@ -777,7 +777,7 @@ export default class Component extends StyleableModel<ComponentProperties> {
     const dynamicAttributes = this.dataResolverWatchers.getDynamicAttributesDefs();
     return this.setAttributes(
       {
-        ...this.getAttributes({ noClass: true }),
+        ...this.getAttributes({ noClass: true, noStyle: true }),
         ...dynamicAttributes,
         ...attrs,
       },
@@ -847,7 +847,8 @@ export default class Component extends StyleableModel<ComponentProperties> {
       const state = em.get('state');
       const cc = em.Css;
       const propOrig = this.getStyle(opts);
-      this.rule = cc.setIdRule(this.getId(), prop, { state, ...opts });
+      const newStyle = { ...propOrig, ...prop };
+      this.rule = cc.setIdRule(this.getId(), newStyle, { state, ...opts });
       const diff = shallowDiff(propOrig, prop);
       this.set('style', '', { silent: true });
       keys(diff).forEach((pr) => this.trigger(`change:style:${pr}`));

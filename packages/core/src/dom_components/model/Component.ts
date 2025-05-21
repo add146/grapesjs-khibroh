@@ -225,6 +225,10 @@ export default class Component extends StyleableModel<ComponentProperties> {
     return this.frame?.getPage();
   }
 
+  getType() {
+    return this.get('type') || 'default';
+  }
+
   preInit() {}
 
   /**
@@ -449,12 +453,11 @@ export default class Component extends StyleableModel<ComponentProperties> {
     const { em } = this;
     if (!em) return;
 
-    const event = 'component:styleUpdate';
     const styleKeys = keys(newStyles);
     const pros = { style: newStyles };
 
-    em.trigger(event, this, pros);
-    styleKeys.forEach((key) => em.trigger(`${event}:${key}`, this, pros));
+    this.emitWithEditor(ComponentsEvents.styleUpdate, this, pros);
+    styleKeys.forEach((key) => this.emitWithEditor(`${ComponentsEvents.styleUpdateProperty}${key}`, this, pros));
 
     const collectionsStateMap = this.collectionsStateMap;
     const allParentCollectionIds = Object.keys(collectionsStateMap);

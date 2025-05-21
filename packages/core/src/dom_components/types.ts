@@ -54,6 +54,14 @@ export enum ComponentsEvents {
   updateInside = 'component:update-inside',
 
   /**
+   * @event `component:styleUpdate` Component related styles are updated, the component is passed as an argument to the callback.
+   * @example
+   * editor.on('component:styleUpdate', (component) => { ... });
+   */
+  styleUpdate = 'component:styleUpdate',
+  styleUpdateProperty = 'component:styleUpdate:',
+
+  /**
    * @event `component:select` Component selected.
    * @example
    * editor.on('component:select', (component) => { ... });

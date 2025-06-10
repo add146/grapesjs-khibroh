@@ -72,11 +72,11 @@ export default class BlockManager extends ItemManagerModule<BlockManagerConfig, 
 
   onInit() {
     const { config, blocks, blocksVisible } = this;
-    blocks.add(config.blocks || []);
     // Setup the sync between the global and public collections
     blocks.on('add', (model) => blocksVisible.add(model));
     blocks.on('remove', (model) => blocksVisible.remove(model));
     blocks.on('reset', (coll) => blocksVisible.reset(coll.models));
+    blocks.add(config.blocks || []);
   }
 
   /**

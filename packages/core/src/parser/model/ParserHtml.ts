@@ -75,8 +75,9 @@ const ParserHtml = (em?: EditorModel, config: ParserConfig & { returnArray?: boo
 
       while (str.indexOf('/*') >= 0) {
         const start = str.indexOf('/*');
-        const end = str.indexOf('*/') + 2;
-        str = str.replace(str.slice(start, end), '');
+        const end = str.indexOf('*/');
+        const endIndex = end > -1 ? end + 2 : undefined;
+        str = str.replace(str.slice(start, endIndex), '');
       }
 
       const decls = str.split(';');

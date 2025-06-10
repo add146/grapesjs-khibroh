@@ -84,8 +84,14 @@ describe('ParserHtml', () => {
   });
 
   test('Parse style with comments', () => {
-    expect(obj.parseStyle('/* color #ffffff; */ width: 100px;')).toEqual({
+    expect(obj.parseStyle('/* color #ffffff; */ width: 100px; /* height: 10px; */')).toEqual({
       width: '100px',
+    });
+  });
+
+  test('Parse style with broken comments', () => {
+    expect(obj.parseStyle('/* color #ffffff; */ height: 50px; /* width: 10px; ')).toEqual({
+      height: '50px',
     });
   });
 
@@ -922,8 +928,8 @@ describe('ParserHtml', () => {
 
     test('converts data-gjs-data-resolver to dataResolver', () => {
       const str = `
-          <div 
-            data-gjs-type="data-variable" 
+          <div
+            data-gjs-type="data-variable"
             data-gjs-data-resolver='{"type":"data-variable","path":"some path","collectionId":"someCollectionId"}'
           ></div>
         `;

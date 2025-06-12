@@ -44,7 +44,7 @@ export default abstract class Module<T extends ModuleConfig = ModuleConfig> impl
   collections: Collection[] = [];
   cls: any[] = [];
   state?: Model;
-  events: any;
+  events: object = {};
   model?: any;
   view?: any;
 
@@ -129,18 +129,19 @@ export abstract class ItemManagerModule<
   cls: any[] = [];
   all: TCollection;
   view?: View;
+  events!: Record<string, string>;
 
   constructor(
     em: EditorModel,
     moduleName: string,
     all: any,
-    events?: any,
+    events?: Record<string, string>,
     defaults?: TConf,
     opts: { skipListen?: boolean } = {},
   ) {
     super(em, moduleName, defaults);
     this.all = all;
-    this.events = events;
+    if (events) this.events = events;
     !opts.skipListen && this.__initListen();
   }
 

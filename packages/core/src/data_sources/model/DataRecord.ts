@@ -63,9 +63,9 @@ export default class DataRecord<T extends DataRecordProps = DataRecordProps> ext
    * @private
    * @name handleChange
    */
-  handleChange() {
+  handleChange(m: DataRecord, opts: SetOptions) {
     const changed = this.changedAttributes();
-    keys(changed).forEach((prop) => this.triggerChange(prop));
+    keys(changed).forEach((prop) => this.triggerChange(prop, opts));
   }
 
   /**
@@ -113,10 +113,12 @@ export default class DataRecord<T extends DataRecordProps = DataRecordProps> ext
    * @param {String} [prop] - Optional property name to trigger a change event for a specific property.
    * @name triggerChange
    */
-  triggerChange(prop?: string) {
+  triggerChange(prop?: string, options: SetOptions = {}) {
     const { dataSource, em } = this;
-    const data = { dataSource, dataRecord: this };
     const paths = this.getPaths(prop);
+    const data = { dataSource, dataRecord: this, path: paths[0], options };
+    em.trigger(DataSourcesEvents.path, data);
+    em.trigger(`${DataSourcesEvents.pathSource}:${dataSource.id}`, data);
     paths.forEach((path) => em.trigger(`${DataSourcesEvents.path}:${path}`, { ...data, path }));
   }
 

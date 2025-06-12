@@ -1,12 +1,19 @@
 import { isEmpty, forEach, isString, isArray } from 'underscore';
-import { Model, ObjectAny, View } from '../../common';
-import StyleableModel from '../../domain_abstract/model/StyleableModel';
+import { Model, ObjectAny } from '../../common';
+import StyleableModel, { StyleProps } from '../../domain_abstract/model/StyleableModel';
 import Selectors from '../../selector_manager/model/Selectors';
 import { getMediaLength } from '../../code_manager/model/CssGenerator';
 import { isEmptyObj, hasWin } from '../../utils/mixins';
 import Selector, { SelectorProps } from '../../selector_manager/model/Selector';
 import EditorModel from '../../editor/model/Editor';
 import CssRuleView from '../view/CssRuleView';
+
+export interface ToCssOptions {
+  important?: boolean | string[];
+  allowEmpty?: boolean;
+  style?: StyleProps;
+  inline?: boolean;
+}
 
 /** @private */
 export interface CssRuleProperties {
@@ -214,7 +221,7 @@ export default class CssRule extends StyleableModel<CssRuleProperties> {
    * });
    * cssRule.getDeclaration() // ".class1{color:red;}"
    */
-  getDeclaration(opts: ObjectAny = {}) {
+  getDeclaration(opts: ToCssOptions = {}) {
     let result = '';
     const { important } = this.attributes;
     const selectors = this.selectorsToString(opts);
@@ -285,7 +292,7 @@ export default class CssRule extends StyleableModel<CssRuleProperties> {
    * });
    * cssRule.toCSS() // "@media (min-width: 500px){.class1{color:red;}}"
    */
-  toCSS(opts: ObjectAny = {}) {
+  toCSS(opts: ToCssOptions = {}) {
     let result = '';
     const atRule = this.getAtRule();
     const block = this.getDeclaration(opts);

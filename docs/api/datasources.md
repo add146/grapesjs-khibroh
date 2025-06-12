@@ -3,18 +3,54 @@
 ## DataSources
 
 This module manages data sources within the editor.
-You can initialize the module with the editor by passing an instance of `EditorModel`.
-
-```js
-const editor = new EditorModel();
-const dsm = new DataSourceManager(editor);
-```
-
 Once the editor is instantiated, you can use the following API to manage data sources:
 
 ```js
+const editor = grapesjs.init({ ... });
 const dsm = editor.DataSources;
 ```
+
+## Available Events
+* `data:add` Added new data source.
+
+```javascript
+editor.on('data:add', (dataSource) => { ... });
+```
+
+* `data:remove` Data source removed.
+
+```javascript
+editor.on('data:remove', (dataSource) => { ... });
+```
+
+* `data:update` Data source updated.
+
+```javascript
+editor.on('data:update', (dataSource, changes) => { ... });
+```
+
+* `data:path` Data record path update.
+
+```javascript
+editor.on('data:path:SOURCE_ID.RECORD_ID.PROP_NAME', ({ dataSource, dataRecord, path }) => { ... });
+editor.on('data:path', ({ dataSource, dataRecord, path }) => {
+ console.log('Path update in any data source')
+});
+```
+
+* `data:pathSource` Data record path update per source.
+
+```javascript
+editor.on('data:pathSource:SOURCE_ID', ({ dataSource, dataRecord, path }) => { ... });
+```
+
+* `data` Catch-all event for all the events mentioned above.
+
+```javascript
+editor.on('data', ({ event, model, ... }) => { ... });
+```
+
+## Methods
 
 *   [add][1] - Add a new data source.
 *   [get][2] - Retrieve a data source by its ID.
@@ -22,21 +58,7 @@ const dsm = editor.DataSources;
 *   [remove][4] - Remove a data source by its ID.
 *   [clear][5] - Remove all data sources.
 
-Example of adding a data source:
-
-```js
-const ds = dsm.add({
-  id: 'my_data_source_id',
-  records: [
-    { id: 'id1', name: 'value1' },
-    { id: 'id2', name: 'value2' }
-  ]
-});
-```
-
-### Parameters
-
-*   `em` **EditorModel** Editor model.
+[DataSource]: datasource.html
 
 ## add
 

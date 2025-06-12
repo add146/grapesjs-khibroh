@@ -40,6 +40,8 @@ import EditorModel from '../editor/model/Editor';
 import Component from '../dom_components/model/Component';
 import { ObjectAny, PrevToNewIdMap } from '../common';
 import { UpdateStyleOptions } from '../domain_abstract/model/StyleableModel';
+import { CssEvents } from './types';
+import CssRuleView from './view/CssRuleView';
 
 /** @private */
 interface RuleOptions {
@@ -72,8 +74,15 @@ export interface GetSetRuleOptions extends UpdateStyleOptions {
 type CssRuleStyle = Required<CssRuleProperties>['style'];
 
 export default class CssComposer extends ItemManagerModule<CssComposerConfig & { pStylePrefix?: string }> {
+  classes = {
+    CssRule,
+    CssRules,
+    CssRuleView,
+    CssRulesView,
+  };
   rules: CssRules;
   rulesView?: CssRulesView;
+  events = CssEvents;
 
   Selectors = Selectors;
 
@@ -85,7 +94,7 @@ export default class CssComposer extends ItemManagerModule<CssComposerConfig & {
    * @private
    */
   constructor(em: EditorModel) {
-    super(em, 'CssComposer', null, {}, defConfig());
+    super(em, 'CssComposer', null, CssEvents, defConfig());
     const { config } = this;
 
     const ppfx = config.pStylePrefix;

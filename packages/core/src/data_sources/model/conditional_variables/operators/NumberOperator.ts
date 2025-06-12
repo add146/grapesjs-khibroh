@@ -1,4 +1,3 @@
-import { enumToArray } from '../../../utils';
 import { SimpleOperator } from './BaseOperator';
 
 export enum NumberOperation {

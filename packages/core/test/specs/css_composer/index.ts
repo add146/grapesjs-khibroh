@@ -162,7 +162,7 @@ describe('Css Composer', () => {
       const rule = obj.getIdRule(name)!;
       expect(rule.selectorsToString()).toEqual(`#${name}`);
       expect(rule.styleToString()).toEqual('color:red;');
-      expect(rule.styleToString({ important: 1 })).toEqual('color:red !important;');
+      expect(rule.styleToString({ important: true })).toEqual('color:red !important;');
       expect(rule.styleToString({ important: ['color'] })).toEqual('color:red !important;');
     });
 

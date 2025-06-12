@@ -172,7 +172,7 @@ export default class CssGenerator extends Model {
     });
 
     if ((selectorStrNoAdd && found) || selectorsAdd || singleAtRule || !model) {
-      const block = rule.getDeclaration({ body: 1 });
+      const block = rule.getDeclaration();
       block && (opts.json ? (result = rule) : (result += block));
     } else {
       dump.push(rule);

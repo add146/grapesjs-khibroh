@@ -96,7 +96,7 @@ export default {
     methods[method](listenToEl, 'scroll', this.onContainerChange);
     em[method](`component:toggled ${eventCmpUpdate} undo redo`, this.onSelect, this);
     em[method]('change:componentHovered', this.onHovered, this);
-    em[method](`${ComponentsEvents.resize} styleable:change component:input`, this.updateGlobalPos, this);
+    em[method](`${ComponentsEvents.resize} styleable:change ${ComponentsEvents.input}`, this.updateGlobalPos, this);
     em[method](`${eventCmpUpdate}:toolbar`, this._upToolbar, this);
     em[method]('frame:updated', this.onFrameUpdated, this);
     em[method]('canvas:updateTools', this.onFrameUpdated, this);

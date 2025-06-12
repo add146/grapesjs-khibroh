@@ -1,5 +1,3 @@
-import { enumToArray } from '../../../utils';
-import { DataConditionSimpleOperation } from '../types';
 import { SimpleOperator } from './BaseOperator';
 
 export enum BooleanOperation {

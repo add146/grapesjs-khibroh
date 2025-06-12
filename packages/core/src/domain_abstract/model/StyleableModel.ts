@@ -17,6 +17,7 @@ import {
   isDataResolverProps,
 } from '../../data_sources/utils';
 import { DataResolver } from '../../data_sources/types';
+import { ToCssOptions } from '../../css_composer/model/CssRule';
 
 export type StyleProps = Record<string, string | string[] | DataVariableProps | DataConditionProps>;
 
@@ -241,9 +242,9 @@ export default class StyleableModel<T extends ObjectHash = any> extends Model<T>
    * @param {Object} [opts={}] Options
    * @return {String}
    */
-  styleToString(opts: ObjectAny = {}) {
+  styleToString(opts: ToCssOptions = {}) {
     const result: string[] = [];
-    const style = this.getStyle(opts);
+    const style = opts.style || this.getStyle(opts);
     const imp = opts.important;
 
     for (let prop in style) {

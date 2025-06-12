@@ -70,6 +70,13 @@ export enum ComponentsEvents {
   selectBefore = 'component:select:before',
 
   /**
+   * @event `component:mount` Component is mounted in the canvas.
+   * @example
+   * editor.on('component:mount', (component) => { ... });
+   */
+  mount = 'component:mount',
+
+  /**
    * @event `component:script:mount` Component with script is mounted.
    * @example
    * editor.on('component:script:mount', ({ component, view, el }) => { ... });
@@ -90,6 +97,13 @@ export enum ComponentsEvents {
    * editor.on('component:render', ({ component, view, el }) => { ... });
    */
   render = 'component:render',
+
+  /**
+   * @event `component:input` Event triggered on `input` DOM event. This is useful to catch direct input changes in the component (eg. Text component).
+   * @example
+   * editor.on('component:input', (component) => { ... });
+   */
+  input = 'component:input',
 
   /**
    * @event `component:resize` Component resized. This event is triggered when the component is resized in the canvas.

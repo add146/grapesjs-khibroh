@@ -58,6 +58,28 @@ export interface DataSourceTransformers {
   onRecordSetValue?: (args: { id: string | number; key: string; value: any }) => any;
 }
 
+type DotSeparatedKeys<T> = T extends object
+  ? {
+      [K in keyof T]: K extends string
+        ? T[K] extends object
+          ? `${K}` | `${K}.${DotSeparatedKeys<T[K]>}`
+          : `${K}`
+        : never;
+    }[keyof T]
+  : never;
+
+export type DeepPartialDot<T> = {
+  [P in DotSeparatedKeys<T>]?: P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+      ? Rest extends DotSeparatedKeys<T[K]>
+        ? DeepPartialDot<T[K]>[Rest]
+        : never
+      : never
+    : P extends keyof T
+      ? T[P]
+      : never;
+};
+
 /**{START_EVENTS}*/
 export enum DataSourcesEvents {
   /**
@@ -86,9 +108,19 @@ export enum DataSourcesEvents {
   /**
    * @event `data:path` Data record path update.
    * @example
-   * editor.on('data:path:SOURCE_ID:RECORD_ID:PROP_NAME', ({ dataSource, dataRecord, path }) => { ... });
+   * editor.on('data:path:SOURCE_ID.RECORD_ID.PROP_NAME', ({ dataSource, dataRecord, path }) => { ... });
+   * editor.on('data:path', ({ dataSource, dataRecord, path }) => {
+   *  console.log('Path update in any data source')
+   * });
    */
   path = 'data:path',
+
+  /**
+   * @event `data:pathSource` Data record path update per source.
+   * @example
+   * editor.on('data:pathSource:SOURCE_ID', ({ dataSource, dataRecord, path }) => { ... });
+   */
+  pathSource = 'data:pathSource:',
 
   /**
    * @event `data` Catch-all event for all the events mentioned above.
@@ -98,24 +130,6 @@ export enum DataSourcesEvents {
   all = 'data',
 }
 /**{END_EVENTS}*/
-type DotSeparatedKeys<T> = T extends object
-  ? {
-      [K in keyof T]: K extends string
-        ? T[K] extends object
-          ? `${K}` | `${K}.${DotSeparatedKeys<T[K]>}`
-          : `${K}`
-        : never;
-    }[keyof T]
-  : never;
 
-export type DeepPartialDot<T> = {
-  [P in DotSeparatedKeys<T>]?: P extends `${infer K}.${infer Rest}`
-    ? K extends keyof T
-      ? Rest extends DotSeparatedKeys<T[K]>
-        ? DeepPartialDot<T[K]>[Rest]
-        : never
-      : never
-    : P extends keyof T
-      ? T[P]
-      : never;
-};
+// need this to avoid the TS documentation generator to break
+export default DataSourcesEvents;

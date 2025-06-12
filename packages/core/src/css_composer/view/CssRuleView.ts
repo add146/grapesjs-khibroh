@@ -1,6 +1,8 @@
 import FrameView from '../../canvas/view/FrameView';
 import { View } from '../../common';
+import EditorModel from '../../editor/model/Editor';
 import CssRule from '../model/CssRule';
+import { CssEvents } from '../types';
 
 export default class CssRuleView extends View<CssRule> {
   config: any;
@@ -19,6 +21,10 @@ export default class CssRuleView extends View<CssRule> {
     return this.config.frameView;
   }
 
+  get em(): EditorModel {
+    return this.model.em!;
+  }
+
   remove() {
     super.remove();
     this.model.removeView(this);
@@ -35,9 +41,13 @@ export default class CssRuleView extends View<CssRule> {
   }
 
   render() {
-    const { model, el } = this;
+    const { model, el, em } = this;
     const important = model.get('important');
-    el.innerHTML = model.toCSS({ important });
+    const css = model.toCSS({ important });
+    const mountProps = { rule: model, ruleView: this, css };
+    em?.trigger(CssEvents.mountBefore, mountProps);
+    el.innerHTML = mountProps.css;
+    em?.trigger(CssEvents.mount, mountProps);
     return this;
   }
 }

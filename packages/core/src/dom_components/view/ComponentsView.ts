@@ -8,6 +8,7 @@ import ComponentView from './ComponentView';
 import FrameView from '../../canvas/view/FrameView';
 import Components from '../model/Components';
 import { ResetComponentsOptions } from '../model/types';
+import { ComponentsEvents } from '../types';
 
 export default class ComponentsView extends View {
   opts!: any;
@@ -119,7 +120,7 @@ export default class ComponentsView extends View {
     }
 
     if (!model.opt.temporary) {
-      em?.trigger('component:mount', model);
+      em?.trigger(ComponentsEvents.mount, model);
     }
 
     return rendered;

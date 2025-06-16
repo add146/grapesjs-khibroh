@@ -355,7 +355,6 @@ describe('DataSource Serialization', () => {
 
     test('StyleDataVariable', () => {
       const componentProjectData: ProjectData = {
-        assets: [],
         pages: [
           {
             frames: [
@@ -371,28 +370,9 @@ describe('DataSource Serialization', () => {
                       type: 'text',
                     },
                   ],
-                  docEl: {
-                    tagName: 'html',
-                  },
-                  head: {
-                    type: 'head',
-                  },
-                  stylable: [
-                    'background',
-                    'background-color',
-                    'background-image',
-                    'background-repeat',
-                    'background-attachment',
-                    'background-position',
-                    'background-size',
-                  ],
-                  type: 'wrapper',
                 },
-                id: 'componentid',
               },
             ],
-            id: 'frameid',
-            type: 'main',
           },
         ],
         styles: [
@@ -407,18 +387,29 @@ describe('DataSource Serialization', () => {
             },
           },
         ],
-        symbols: [],
         dataSources: [styleDataSource],
       };
 
       editor.loadProjectData(componentProjectData);
 
-      const components = editor.getComponents();
-      const component = components.models[0];
+      const component = editor.getComponents().models[0];
       const style = component.getStyle();
+      expect(style).toEqual({ color: 'red' });
 
-      expect(style).toEqual({
-        color: 'red',
+      // Further validation: ensure the style updates when the data source changes
+      const loadedDsm = editor.DataSources;
+      const colorsDatasource = loadedDsm.get('colors-data');
+      colorsDatasource.getRecord('id1')?.set({ color: 'blue' });
+
+      const updatedStyle = component.getStyle();
+      expect(updatedStyle).toEqual({ color: 'blue' });
+      const unresolvedStyle = component.getStyle({ skipResolve: true });
+      expect(unresolvedStyle).toEqual({
+        color: {
+          path: 'colors-data.id1.color',
+          type: DataVariableType,
+          defaultValue: 'black',
+        },
       });
     });
   });

@@ -1,38 +1,45 @@
 import { ObjectAny } from '../../common';
-import Component from './Component';
+import StyleableModel from '../../domain_abstract/model/StyleableModel';
 import {
-  ComponentResolverWatcher,
-  ComponentResolverWatcherOptions,
+  ModelResolverWatcher as ModelResolverWatcher,
+  ModelResolverWatcherOptions,
   DynamicWatchersOptions,
-} from './ComponentResolverWatcher';
+} from './ModelResolverWatcher';
 import { getSymbolsToUpdate } from './SymbolUtils';
 
 export const updateFromWatcher = { fromDataSource: true, avoidStore: true };
 
-export class ComponentDataResolverWatchers {
-  private propertyWatcher: ComponentResolverWatcher;
-  private attributeWatcher: ComponentResolverWatcher;
+export class ModelDataResolverWatchers {
+  private propertyWatcher: ModelResolverWatcher;
+  private attributeWatcher: ModelResolverWatcher;
+  private styleWatcher: ModelResolverWatcher;
 
   constructor(
-    private component: Component | undefined,
-    options: ComponentResolverWatcherOptions,
+    private model: StyleableModel | undefined,
+    options: ModelResolverWatcherOptions,
   ) {
-    this.propertyWatcher = new ComponentResolverWatcher(component, this.onPropertyUpdate, options);
-    this.attributeWatcher = new ComponentResolverWatcher(component, this.onAttributeUpdate, options);
+    this.propertyWatcher = new ModelResolverWatcher(model, this.onPropertyUpdate, options);
+    this.attributeWatcher = new ModelResolverWatcher(model, this.onAttributeUpdate, options);
+    this.styleWatcher = new ModelResolverWatcher(model, this.onStyleUpdate, options);
   }
 
-  private onPropertyUpdate(component: Component | undefined, key: string, value: any) {
+  private onPropertyUpdate(component: StyleableModel | undefined, key: string, value: any) {
     component?.set(key, value, updateFromWatcher);
   }
 
-  private onAttributeUpdate(component: Component | undefined, key: string, value: any) {
-    component?.addAttributes({ [key]: value }, updateFromWatcher);
+  private onAttributeUpdate(component: StyleableModel | undefined, key: string, value: any) {
+    (component as any)?.addAttributes({ [key]: value }, updateFromWatcher);
   }
 
-  bindComponent(component: Component) {
-    this.component = component;
-    this.propertyWatcher.bindComponent(component);
-    this.attributeWatcher.bindComponent(component);
+  private onStyleUpdate(component: StyleableModel | undefined, key: string, value: any) {
+    component?.addStyle({ [key]: value }, { ...updateFromWatcher, noEvent: true, partial: true, avoidStore: true });
+  }
+
+  bindModel(model: StyleableModel) {
+    this.model = model;
+    this.propertyWatcher.bindModel(model);
+    this.attributeWatcher.bindModel(model);
+    this.styleWatcher.bindModel(model);
     this.updateSymbolOverride();
   }
 
@@ -60,14 +67,27 @@ export class ComponentDataResolverWatchers {
     return evaluatedProps;
   }
 
+  setStyles(styles: ObjectAny, options: DynamicWatchersOptions = {}) {
+    return this.styleWatcher.setDynamicValues(styles, options);
+  }
+
+  /**
+   * Disables inline style management for the component. Style handling is shifted to CSS rules
+   */
+  disableStyles() {
+    this.styleWatcher.removeListeners();
+    this.styleWatcher.destroy();
+  }
+
   removeAttributes(attributes: string[]) {
     this.attributeWatcher.removeListeners(attributes);
     this.updateSymbolOverride();
   }
 
   private updateSymbolOverride() {
-    const isCollectionItem = !!Object.keys(this.component?.collectionsStateMap ?? {}).length;
-    if (!this.component || !isCollectionItem) return;
+    const model = this.model as any;
+    const isCollectionItem = !!Object.keys(model?.collectionsStateMap ?? {}).length;
+    if (!this.model || !isCollectionItem) return;
 
     const keys = this.propertyWatcher.getValuesResolvingFromCollections();
     const attributesKeys = this.attributeWatcher.getValuesResolvingFromCollections();
@@ -76,16 +96,17 @@ export class ComponentDataResolverWatchers {
     const haveOverridenAttributes = Object.keys(attributesKeys).length;
     if (haveOverridenAttributes) combinedKeys.push('attributes');
 
-    const toUp = getSymbolsToUpdate(this.component);
+    const toUp = getSymbolsToUpdate(model);
     toUp.forEach((child) => {
       child.setSymbolOverride(combinedKeys, { fromDataSource: true });
     });
-    this.component.setSymbolOverride(combinedKeys, { fromDataSource: true });
+    model.setSymbolOverride(combinedKeys, { fromDataSource: true });
   }
 
   onCollectionsStateMapUpdate() {
     this.propertyWatcher.onCollectionsStateMapUpdate();
     this.attributeWatcher.onCollectionsStateMapUpdate();
+    this.styleWatcher.onCollectionsStateMapUpdate();
   }
 
   getDynamicPropsDefs() {
@@ -96,6 +117,10 @@ export class ComponentDataResolverWatchers {
     return this.attributeWatcher.getAllSerializableValues();
   }
 
+  getDynamicStylesDefs() {
+    return this.styleWatcher.getAllSerializableValues();
+  }
+
   getPropsDefsOrValues(props: ObjectAny) {
     return this.propertyWatcher.getSerializableValues(props);
   }
@@ -104,8 +129,13 @@ export class ComponentDataResolverWatchers {
     return this.attributeWatcher.getSerializableValues(attributes);
   }
 
+  getStylesDefsOrValues(styles: ObjectAny) {
+    return this.styleWatcher.getSerializableValues(styles);
+  }
+
   destroy() {
     this.propertyWatcher.destroy();
     this.attributeWatcher.destroy();
+    this.styleWatcher.destroy();
   }
 }

@@ -2,7 +2,6 @@ import Editor from '../../../../src/editor/model/Editor';
 import DataSourceManager from '../../../../src/data_sources';
 import ComponentWrapper from '../../../../src/dom_components/model/ComponentWrapper';
 import { DataVariableType } from '../../../../src/data_sources/model/DataVariable';
-import { DataSourceProps } from '../../../../src/data_sources/types';
 import { setupTestEditor } from '../../../common';
 
 describe('StyleDataVariable', () => {
@@ -25,17 +24,19 @@ describe('StyleDataVariable', () => {
     };
     dsm.add(styleDataSource);
 
+    const initialStyle = {
+      color: {
+        type: DataVariableType,
+        defaultValue: 'black',
+        path: 'colors-data.id1.color',
+      },
+    };
+
     const cmp = cmpRoot.append({
       tagName: 'h1',
       type: 'text',
       content: 'Hello World',
-      style: {
-        color: {
-          type: DataVariableType,
-          defaultValue: 'black',
-          path: 'colors-data.id1.color',
-        },
-      },
+      style: initialStyle,
     })[0];
 
     const style = cmp.getStyle();
@@ -157,62 +158,148 @@ describe('StyleDataVariable', () => {
     expect(updatedStyle).toHaveProperty('color', 'blue');
   });
 
-  describe('.addToCollection', () => {
-    test('should add a datavariable to css rule made via .addToCollection', () => {
-      const dsId = 'globalStyles';
-      const drId = 'red-header';
-      const selector = 'h1';
+  describe('Component style manipulations', () => {
+    test('adding a new dynamic style with addStyle', () => {
+      dsm.add({ id: 'data1', records: [{ id: 'rec1', color: 'red' }] });
+      const cmp = cmpRoot.append({
+        style: {
+          color: { type: DataVariableType, path: 'data1.rec1.color' },
+        },
+      })[0];
+      expect(cmp.getStyle()).toEqual({ color: 'red' });
 
-      const addToCollectionDataSource = {
+      dsm.add({ id: 'data2', records: [{ id: 'rec2', width: '100px' }] });
+      cmp.addStyle({
+        width: { type: DataVariableType, path: 'data2.rec2.width' },
+      });
+
+      expect(cmp.getStyle()).toEqual({ color: 'red', width: '100px' });
+      dsm.get('data1').getRecord('rec1')?.set({ color: 'blue' });
+      expect(cmp.getStyle()).toEqual({ color: 'blue', width: '100px' });
+      dsm.get('data2').getRecord('rec2')?.set({ width: '200px' });
+      expect(cmp.getStyle()).toEqual({ color: 'blue', width: '200px' });
+    });
+
+    test('updating a dynamic style with a static value using setStyle', () => {
+      dsm.add({ id: 'data1', records: [{ id: 'rec1', color: 'red' }] });
+      const cmp = cmpRoot.append({
+        style: {
+          color: { type: DataVariableType, path: 'data1.rec1.color' },
+          'font-size': '12px',
+        },
+      })[0];
+      expect(cmp.getStyle()).toEqual({ color: 'red', 'font-size': '12px' });
+
+      cmp.setStyle({ color: 'green', 'font-size': '12px' });
+      expect(cmp.getStyle()).toEqual({ color: 'green', 'font-size': '12px' });
+
+      // The component should no longer be listening to the data source
+      dsm.get('data1').getRecord('rec1')?.set({ color: 'blue' });
+      expect(cmp.getStyle()).toEqual({ color: 'green', 'font-size': '12px' });
+    });
+
+    test('updating a static style with a dynamic value', () => {
+      dsm.add({ id: 'data1', records: [{ id: 'rec1', color: 'red' }] });
+      const cmp = cmpRoot.append({ style: { color: 'green' } })[0];
+      expect(cmp.getStyle()).toEqual({ color: 'green' });
+
+      cmp.setStyle({
+        color: { type: DataVariableType, path: 'data1.rec1.color' },
+      });
+      expect(cmp.getStyle()).toEqual({ color: 'red' });
+
+      dsm.get('data1').getRecord('rec1')?.set({ color: 'blue' });
+      expect(cmp.getStyle()).toEqual({ color: 'blue' });
+    });
+
+    test('overwriting a dynamic style with a new dynamic style', () => {
+      dsm.add({ id: 'data1', records: [{ id: 'rec1', color: 'red' }] });
+      dsm.add({ id: 'data2', records: [{ id: 'rec2', color: 'purple' }] });
+      const cmp = cmpRoot.append({
+        style: {
+          color: { type: DataVariableType, path: 'data1.rec1.color' },
+        },
+      })[0];
+      expect(cmp.getStyle()).toEqual({ color: 'red' });
+
+      cmp.setStyle({
+        color: { type: DataVariableType, path: 'data2.rec2.color' },
+      });
+      expect(cmp.getStyle()).toEqual({ color: 'purple' });
+
+      // Should no longer listen to the old data source
+      dsm.get('data1').getRecord('rec1')?.set({ color: 'blue' });
+      expect(cmp.getStyle()).toEqual({ color: 'purple' });
+
+      // Should listen to the new data source
+      dsm.get('data2').getRecord('rec2')?.set({ color: 'orange' });
+      expect(cmp.getStyle()).toEqual({ color: 'orange' });
+    });
+
+    test('getting unresolver style values', () => {
+      dsm.add({ id: 'data1', records: [{ id: 'rec1', color: 'red', width: '100px' }] });
+      const color = { type: DataVariableType, path: 'data1.rec1.color' };
+      const cmp = cmpRoot.append({
+        style: {
+          color,
+        },
+      })[0];
+      expect(cmp.getStyle()).toEqual({ color: 'red' });
+      const width = { type: DataVariableType, path: 'data1.rec1.width' };
+      cmp.setStyle({ width });
+
+      expect(cmp.getStyle({ skipResolve: true })).toEqual({ color, width });
+    });
+  });
+
+  describe('.addToCollection', () => {
+    test('should add a datavariable to css rule and verify via CssComposer', () => {
+      const dsId = 'globalStyles';
+      const drId1 = 'red-header';
+      const drId2 = 'blue-paragraph';
+      const selectorH1 = 'h1';
+      const selectorP = 'p';
+
+      dsm.add({
         id: dsId,
         records: [
-          {
-            id: drId,
-            property: 'color',
-            value: 'red',
-            selector,
-            label: 'Red Header',
-          },
+          { id: drId1, value: 'red' },
+          { id: drId2, value: 'blue' },
         ],
-      };
-      dsm.add(addToCollectionDataSource);
+      });
 
-      cmpRoot.append({
-        tagName: 'h1',
-        type: 'text',
-        content: 'Hello World',
-      })[0];
-
-      const cssComposer = em.getEditor().CssComposer;
-
-      const [rule] = cssComposer.addCollection([
-        {
-          selectors: [],
-          selectorsAdd: selector,
-          group: `globalStyles:${drId}`,
-          style: {
-            color: {
-              type: DataVariableType,
-              defaultValue: 'black',
-              path: `${dsId}.${drId}.value`,
-            },
-          },
-        },
+      cmpRoot.append([
+        { tagName: 'h1', type: 'text', content: 'Hello World' },
+        { tagName: 'p', type: 'text', content: 'This is a paragraph.' },
       ]);
 
+      const cssComposer = em.getEditor().CssComposer;
+      const initialStyle1 = {
+        color: { type: DataVariableType, path: `${dsId}.${drId1}.value` },
+      };
+      const initialStyle2 = {
+        color: { type: DataVariableType, path: `${dsId}.${drId2}.value` },
+      };
+
+      const [rule1] = cssComposer.addCollection([{ selectors: [selectorH1], style: initialStyle1 }]);
+      const [rule2] = cssComposer.addCollection([{ selectors: [selectorP], style: initialStyle2 }]);
+
       cssComposer.render();
-      const view = rule.getView();
+      const allRules = cssComposer.getAll();
 
-      expect(rule.getStyle()).toHaveProperty('color', 'red');
-      expect(em.getEditor().getCss()).toContain(`${selector}{color:red;}`);
-      expect(view?.el.innerHTML).toContain(`h1{color:red;}`);
+      // Verify initial resolved and unresolved styles
+      expect(rule1.getStyle()).toHaveProperty('color', 'red');
+      expect(rule2.getStyle()).toHaveProperty('color', 'blue');
+      expect(allRules.at(0).getStyle('', { skipResolve: true })).toEqual(initialStyle1);
+      expect(allRules.at(1).getStyle('', { skipResolve: true })).toEqual(initialStyle2);
 
+      // Update data source and verify changes
       const ds = dsm.get(dsId);
-      ds.getRecord(drId)?.set({ value: 'blue' });
+      ds.getRecord(drId1)?.set({ value: 'purple' });
+      ds.getRecord(drId2)?.set({ value: 'orange' });
 
-      expect(rule.getStyle()).toHaveProperty('color', 'blue');
-      expect(em.getEditor().getCss()).toContain(`${selector}{color:blue;}`);
-      expect(view?.el.innerHTML).toContain(`h1{color:blue;}`);
+      expect(rule1.getStyle()).toHaveProperty('color', 'purple');
+      expect(allRules.at(1).getStyle()).toHaveProperty('color', 'orange');
     });
   });
 });

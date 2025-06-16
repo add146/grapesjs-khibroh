@@ -1,6 +1,7 @@
 import { ObjectAny } from '../../common';
 import DataResolverListener from '../../data_sources/model/DataResolverListener';
 import { getDataResolverInstance, getDataResolverInstanceValue, isDataResolverProps } from '../../data_sources/utils';
+import StyleableModel from '../../domain_abstract/model/StyleableModel';
 import EditorModel from '../../editor/model/Editor';
 import Component from './Component';
 
@@ -9,26 +10,27 @@ export interface DynamicWatchersOptions {
   fromDataSource?: boolean;
 }
 
-export interface ComponentResolverWatcherOptions {
+export interface ModelResolverWatcherOptions {
   em: EditorModel;
 }
 
-type UpdateFn = (component: Component | undefined, key: string, value: any) => void;
+type NewType = StyleableModel | undefined;
+type UpdateFn = (component: NewType, key: string, value: any) => void;
 
-export class ComponentResolverWatcher {
+export class ModelResolverWatcher {
   private em: EditorModel;
   private resolverListeners: Record<string, DataResolverListener> = {};
 
   constructor(
-    private component: Component | undefined,
+    private model: NewType,
     private updateFn: UpdateFn,
-    options: ComponentResolverWatcherOptions,
+    options: ModelResolverWatcherOptions,
   ) {
     this.em = options.em;
   }
 
-  bindComponent(component: Component) {
-    this.component = component;
+  bindModel(model: StyleableModel) {
+    this.model = model;
   }
 
   setDynamicValues(values: ObjectAny | undefined, options: DynamicWatchersOptions = {}) {
@@ -63,14 +65,13 @@ export class ComponentResolverWatcher {
       this.getSerializableValues(Object.fromEntries(resolvesFromCollections.map((key) => [key, null]))),
     );
 
-    Object.entries(evaluatedValues).forEach(([key, value]) => this.updateFn(this.component, key, value));
+    Object.entries(evaluatedValues).forEach(([key, value]) => this.updateFn(this.model, key, value));
   }
 
   private get collectionsStateMap() {
-    const component = this.component;
-    if (!component) return {};
-
-    return component.collectionsStateMap;
+    const component = this.model;
+    if (component instanceof Component) return component.collectionsStateMap;
+    return {};
   }
 
   private updateListeners(values: { [key: string]: any }) {
@@ -90,7 +91,7 @@ export class ComponentResolverWatcher {
       this.resolverListeners[key] = new DataResolverListener({
         em,
         resolver,
-        onUpdate: (value) => this.updateFn.bind(this)(this.component, key, value),
+        onUpdate: (value) => this.updateFn(this.model, key, value),
       });
     }
   }

@@ -52,8 +52,8 @@ import {
   updateSymbolProps,
   getSymbolsToUpdate,
 } from './SymbolUtils';
-import { ComponentDataResolverWatchers } from './ComponentDataResolverWatchers';
-import { DynamicWatchersOptions } from './ComponentResolverWatcher';
+import { ModelDataResolverWatchers } from './ModelDataResolverWatchers';
+import { DynamicWatchersOptions } from './ModelResolverWatcher';
 import { DataCollectionStateMap } from '../../data_sources/model/data_collection/types';
 import { checkAndGetSyncableCollectionItemId } from '../../data_sources/utils';
 
@@ -264,18 +264,10 @@ export default class Component extends StyleableModel<ComponentProperties> {
    * @private
    * @ts-ignore */
   collection!: Components;
-  dataResolverWatchers: ComponentDataResolverWatchers;
-  collectionsStateMap: DataCollectionStateMap = {};
 
   constructor(props: ComponentProperties = {}, opt: ComponentOptions) {
     const em = opt.em;
-    const dataResolverWatchers = new ComponentDataResolverWatchers(undefined, { em });
-    super(props, {
-      ...opt,
-      dataResolverWatchers,
-    } as any);
-    dataResolverWatchers.bindComponent(this);
-    this.dataResolverWatchers = dataResolverWatchers;
+    super(props, opt);
 
     bindAll(this, '__upSymbProps', '__upSymbCls', '__upSymbComps', 'syncOnComponentChange');
 
@@ -344,6 +336,10 @@ export default class Component extends StyleableModel<ComponentProperties> {
       isSymbol(this) && initSymbol(this);
       em?.trigger(ComponentsEvents.create, this, opt);
     }
+
+    if (avoidInline(em)) {
+      this.dataResolverWatchers.disableStyles();
+    }
   }
 
   set<A extends string>(
@@ -353,7 +349,7 @@ export default class Component extends StyleableModel<ComponentProperties> {
   ): this {
     let attributes: Partial<ComponentProperties>;
     let options: ComponentSetOptions & {
-      dataResolverWatchers?: ComponentDataResolverWatchers;
+      dataResolverWatchers?: ModelDataResolverWatchers;
     } = { skipWatcherUpdates: false, fromDataSource: false };
     if (typeof keyOrAttributes === 'object') {
       attributes = keyOrAttributes;
@@ -368,7 +364,6 @@ export default class Component extends StyleableModel<ComponentProperties> {
 
     this.dataResolverWatchers = this.dataResolverWatchers || options.dataResolverWatchers;
     const evaluatedProps = this.dataResolverWatchers.addProps(attributes, options);
-
     return super.set(evaluatedProps, options);
   }
 
@@ -812,8 +807,10 @@ export default class Component extends StyleableModel<ComponentProperties> {
    */
   getStyle(options: any = {}, optsAdd: any = {}) {
     const { em } = this;
-    const prop = isString(options) ? options : '';
-    const opts = prop ? optsAdd : options;
+    const isOptionsString = isString(options);
+    const prop = isOptionsString ? options : '';
+    const opts = isOptionsString || options === '' ? optsAdd : options;
+    const skipResolve = !!opts?.skipResolve;
 
     if (avoidInline(em) && !opts.inline) {
       const state = em.get('state');
@@ -822,15 +819,15 @@ export default class Component extends StyleableModel<ComponentProperties> {
       this.rule = rule;
 
       if (rule) {
-        return rule.getStyle(prop);
+        return rule.getStyle(prop, { skipResolve });
       }
 
-      // Return empty style if not rule have been found. We cannot return inline style with the next return
+      // Return empty style if no rule have been found. We cannot return inline style with the next return
       // because else on load inline style is set a #id or .class style
       return {};
     }
 
-    return super.getStyle.call(this, prop);
+    return super.getStyle.call(this, prop, { skipResolve });
   }
 
   /**
@@ -849,7 +846,7 @@ export default class Component extends StyleableModel<ComponentProperties> {
       prop = { ...prop, ...(style as any) };
       const state = em.get('state');
       const cc = em.Css;
-      const propOrig = this.getStyle(opts);
+      const propOrig = this.getStyle({ ...opts, skipResolve: true });
       const newStyle = { ...propOrig, ...prop };
       this.rule = cc.setIdRule(this.getId(), newStyle, { state, ...opts });
       const diff = shallowDiff(propOrig, prop);

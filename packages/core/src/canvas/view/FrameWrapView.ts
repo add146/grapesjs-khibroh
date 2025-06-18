@@ -170,9 +170,12 @@ export default class FrameWrapView extends ModuleView<Frame> {
 
       if (contentDocument) {
         const observer = new ResizeObserver(() => {
-          const minHeight = parseFloat(model.get('minHeight')) || 0;
-          const heightResult = Math.max(contentDocument.body.scrollHeight, minHeight);
-          style.height = `${heightResult}px`;
+          // This prevents "ResizeObserver loop completed with undelivered notifications"
+          requestAnimationFrame(() => {
+            const minHeight = parseFloat(model.get('minHeight')) || 0;
+            const heightResult = Math.max(contentDocument.body.scrollHeight, minHeight);
+            style.height = `${heightResult}px`;
+          });
         });
         observer.observe(contentDocument.body);
         this.sizeObserver = observer;

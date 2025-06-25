@@ -162,6 +162,13 @@ export interface TraitGetValueOptions {
    * @default false
    */
   useType?: boolean;
+
+  /**
+   * If false, return the value
+   * If true and the value is a data resolver, return the data resolver props
+   * @default false
+   */
+  skipResolve?: boolean;
 }
 
 export interface TraitOption {

@@ -266,6 +266,7 @@ export default class Trait extends Model<TraitProperties> {
     const getValue = this.get('getValue');
     let value;
 
+    const skipResolve = opts.skipResolve;
     if (getValue) {
       value = getValue({
         editor: em?.getEditor()!,
@@ -274,8 +275,9 @@ export default class Trait extends Model<TraitProperties> {
       });
     } else if (this.changeProp) {
       value = component.get(name);
+      if (skipResolve) value = component.dataResolverWatchers.getPropsDefsOrValues({ [name]: value })[name];
     } else {
-      value = component.getAttributes()[name];
+      value = component.getAttributes({ skipResolve })[name];
     }
 
     if (opts.useType) {

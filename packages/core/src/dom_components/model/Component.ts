@@ -867,10 +867,14 @@ export default class Component extends StyleableModel<ComponentProperties> {
    * Return all component's attributes
    * @return {Object}
    */
-  getAttributes(opts: { noClass?: boolean; noStyle?: boolean } = {}) {
+  getAttributes(opts: { noClass?: boolean; noStyle?: boolean; skipResolve?: boolean } = {}) {
     const { em } = this;
     const classes: string[] = [];
-    const attributes = { ...this.get('attributes') };
+    const dynamicValues = opts.skipResolve ? this.dataResolverWatchers.getDynamicAttributesDefs() : {};
+    const attributes = {
+      ...this.get('attributes'),
+      ...dynamicValues,
+    };
     const sm = em?.Selectors;
     const id = this.getId();
 

@@ -52,7 +52,10 @@ export default class Canvas extends ModuleModel<CanvasModule> {
     const { em } = this;
     em.setSelected();
     em.get('readyCanvas') && em.stopDefault(); // We have to stop before changing current frames
-    prev?.getFrames().map((frame) => frame.disable());
+    prev?.getFrames().map((frame) => {
+      frame.disable();
+      frame._emitUnload();
+    });
     this.set('frames', page.getFrames());
     this.updateDevice({ frame: page.getMainFrame() });
   }

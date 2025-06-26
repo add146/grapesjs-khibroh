@@ -149,6 +149,15 @@ export enum CanvasEvents {
    * });
    */
   frameLoadBody = 'canvas:frame:load:body',
+
+  /**
+   * @event `canvas:frame:unload` Frame is unloading from the canvas.
+   * @example
+   * editor.on('canvas:frame:unload', ({ frame }) => {
+   *  console.log('Unloading frame', frame);
+   * });
+   */
+  frameUnload = 'canvas:frame:unload',
 }
 /**{END_EVENTS}*/
 

@@ -77,7 +77,7 @@ export default class PageManager extends ItemManagerModule<PageManagerConfig, Pa
     bindAll(this, '_onPageChange');
     const model = new ModuleModel(this, { _undo: true });
     this.model = model;
-    this.pages.on('reset', (coll) => coll.at(0) && this.select(coll.at(0)));
+    this.pages.on('reset', this.__onReset, this);
     this.pages.on('all', this.__onChange, this);
     model.on(chnSel, this._onPageChange);
   }
@@ -86,6 +86,11 @@ export default class PageManager extends ItemManagerModule<PageManagerConfig, Pa
     const { em, events } = this;
     const options = opts || coll;
     em.trigger(events.all, { event, page, options });
+  }
+
+  __onReset() {
+    const firstPage = this.pages.at(0);
+    firstPage && this.select(firstPage);
   }
 
   onLoad() {
@@ -272,7 +277,14 @@ export default class PageManager extends ItemManagerModule<PageManagerConfig, Pa
   }
 
   load(data: any) {
-    const result = this.loadProjectData(data, { all: this.pages, reset: true });
+    const result = this.loadProjectData(data, {
+      all: this.pages,
+      reset: true,
+      onResult: (result: PageProperties[], opts: AddOptions) => {
+        result.forEach((pageProps) => this.add(pageProps, opts));
+        this.__onReset();
+      },
+    });
     this.pages.forEach((page) => page.getFrames().initRefs());
     return result;
   }

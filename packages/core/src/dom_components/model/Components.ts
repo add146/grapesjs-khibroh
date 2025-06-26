@@ -314,7 +314,9 @@ Component> {
     if (isString(models)) {
       models = this.parseString(models, opt)!;
     } else if (isArray(models)) {
-      models.forEach((item: string, index: number) => {
+      // Avoid "Cannot assign to read only property '0' of object '[object Array]'
+      models = [...models];
+      (models as any).forEach((item: string, index: number) => {
         if (isString(item)) {
           const nodes = this.parseString(item, opt);
           (models as any)[index] = isArray(nodes) && !nodes.length ? null : nodes;

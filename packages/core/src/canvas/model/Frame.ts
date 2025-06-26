@@ -8,6 +8,7 @@ import { createId, isComponent, isObject } from '../../utils/mixins';
 import FrameView from '../view/FrameView';
 import Frames from './Frames';
 import { CssRuleJSON } from '../../css_composer/model/CssRule';
+import CanvasEvents from '../types';
 
 const keyAutoW = '__aw';
 const keyAutoH = '__ah';
@@ -228,6 +229,14 @@ export default class Frame extends ModuleModel<CanvasModule> {
 
   _emitUpdated(data = {}) {
     this.em.trigger('frame:updated', { frame: this, ...data });
+  }
+
+  _emitUnload() {
+    this._emitWithEditor(CanvasEvents.frameUnload, { frame: this });
+  }
+
+  _emitWithEditor(event: string, data?: Record<string, any>) {
+    [this.em, this].forEach((item) => item?.trigger(event, data));
   }
 
   hasAutoHeight() {

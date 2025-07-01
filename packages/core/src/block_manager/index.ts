@@ -134,14 +134,16 @@ export default class BlockManager extends ItemManagerModule<BlockManagerConfig, 
       const toActive = block.get('activate') || oldActive;
       const toSelect = block.get('select');
       const first = isArray(cmp) ? cmp[0] : cmp;
+      const selected = toSelect || (toActive && toSelect !== false);
 
-      if (toSelect || (toActive && toSelect !== false)) {
-        em.setSelected(first);
+      if (selected) {
+        em.setSelected(first, { activate: toActive });
+      } else if (toActive) {
+        first.trigger('active');
       }
 
-      if (toActive) {
-        first.trigger('active');
-        oldActive && first.unset(oldKey);
+      if (toActive && oldActive) {
+        first.unset(oldKey);
       }
 
       if (block.get('resetId')) {

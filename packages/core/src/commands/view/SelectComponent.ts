@@ -327,7 +327,7 @@ export default {
    * @param  {Component} model
    * @param  {Event} event
    */
-  select(model: Component, event = {}) {
+  select(model: Component, event: MouseEvent) {
     if (!model) return;
     const { em } = this;
     em.setSelected(model, { event, useValid: true });

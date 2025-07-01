@@ -74,3 +74,12 @@ export enum EditorEvents {
 
 // need this to avoid the TS documentation generator to break
 export default EditorEvents;
+
+export interface SelectComponentOptions {
+  scroll?: boolean;
+  activate?: boolean;
+  event?: PointerEvent | MouseEvent | KeyboardEvent;
+  abort?: boolean;
+  useValid?: boolean;
+  forceChange?: boolean;
+}

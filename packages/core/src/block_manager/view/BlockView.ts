@@ -93,7 +93,7 @@ export default class BlockView extends View<Block> {
     }
 
     const result = target && target.append(content, { at: insertAt })[0];
-    result && em.setSelected(result, { scroll: 1 });
+    result && em.setSelected(result, { scroll: true });
   }
 
   /**

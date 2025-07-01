@@ -45,7 +45,7 @@ import { CanvasSpotBuiltInTypes } from '../../canvas/model/CanvasSpot';
 import DataSourceManager from '../../data_sources';
 import { ComponentsEvents } from '../../dom_components/types';
 import { InitEditorConfig } from '../..';
-import { EditorEvents } from '../types';
+import { EditorEvents, SelectComponentOptions } from '../types';
 
 Backbone.$ = $;
 
@@ -513,7 +513,7 @@ export default class EditorModel extends Model {
    * @param  {Object} [opts={}] Options, optional
    * @public
    */
-  setSelected(el?: Component | Component[], opts: any = {}) {
+  setSelected(el?: Component | Component[], opts: SelectComponentOptions = {}) {
     const { event } = opts;
     const ctrlKey = event && (event.ctrlKey || event.metaKey);
     const { shiftKey } = event || {};
@@ -600,7 +600,7 @@ export default class EditorModel extends Model {
    * @param  {Object} [opts={}] Options, optional
    * @public
    */
-  addSelected(component: Component | Component[], opts: any = {}) {
+  addSelected(component: Component | Component[], opts: SelectComponentOptions = {}) {
     const models: Component[] = isArray(component) ? component : [component];
 
     models.forEach((model) => {
@@ -624,6 +624,16 @@ export default class EditorModel extends Model {
         type: CanvasSpotBuiltInTypes.Select,
         component: model,
       });
+
+      if (opts.activate) {
+        const view = model.getView();
+
+        if (view?.rendered) {
+          view.onActive(opts.event);
+        } else {
+          model.once(ComponentsEvents.render, ({ view }) => view.onActive(opts.event));
+        }
+      }
     });
   }
 

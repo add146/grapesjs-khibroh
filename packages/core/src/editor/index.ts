@@ -423,7 +423,7 @@ export default class Editor implements IBaseModule<EditorConfig> {
    *  editor.select(model);
    * });
    */
-  select(el?: EditorModelParam<'setSelected', 0>, opts?: { scroll?: boolean }) {
+  select(el?: EditorModelParam<'setSelected', 0>, opts?: EditorModelParam<'setSelected', 1>) {
     this.em.setSelected(el, opts);
     return this;
   }

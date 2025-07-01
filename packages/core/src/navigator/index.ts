@@ -276,7 +276,7 @@ export default class LayerManager extends Module<LayerManagerConfig> {
   setLayerData(component: Component, data: Partial<Omit<LayerData, 'components'>>, opts = {}) {
     const { em, config } = this;
     const { open, selected, hovered, visible, locked, name } = data;
-    const cmpOpts = { fromLayers: true, ...opts };
+    const cmpOpts = { fromLayers: true, ...opts } as any;
 
     if (isDef(open)) {
       this.setOpen(component, open!);

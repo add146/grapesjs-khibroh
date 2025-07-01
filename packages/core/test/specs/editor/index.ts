@@ -136,7 +136,7 @@ describe('Editor', () => {
       event: {
         shiftKey: true,
       },
-    };
+    } as any;
 
     em.setSelected(added[0], callSelectedOptions);
     em.setSelected(added[1], callSelectedOptions);
@@ -157,7 +157,7 @@ describe('Editor', () => {
       event: {
         shiftKey: true,
       },
-    };
+    } as any;
 
     const firstComponent = all[keys(all)[0]];
     firstComponent.em.setEditing(true);
@@ -179,7 +179,7 @@ describe('Editor', () => {
       event: {
         shiftKey: true,
       },
-    };
+    } as any;
 
     const firstComponent = all[keys(all)[0]];
     firstComponent.em.setEditing(true);

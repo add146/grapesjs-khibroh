@@ -4,7 +4,7 @@ import { Position } from '../common';
 import { off, on } from './dom';
 import { normalizeFloat } from './mixins';
 
-type RectDim = {
+export type RectDim = {
   t: number;
   l: number;
   w: number;
@@ -19,8 +19,8 @@ type BoundingRect = {
 };
 
 type CallbackOptions = {
-  docs: any;
-  config: any;
+  docs: Document[];
+  config: ResizerOptions;
   el: HTMLElement;
   resizer: Resizer;
 };
@@ -30,6 +30,7 @@ interface ResizerUpdateTargetOptions {
   selectedHandler?: string;
   resizer: Resizer;
   config: ResizerOptions;
+  event: PointerEvent;
 }
 
 interface ResizerOnUpdateContainerOptions {
@@ -63,17 +64,17 @@ export interface ResizerOptions {
   /**
    * On resize start callback.
    */
-  onStart?: (ev: Event, opts: CallbackOptions) => void;
+  onStart?: (ev: PointerEvent, opts: CallbackOptions) => void;
 
   /**
    * On resize move callback.
    */
-  onMove?: (ev: Event) => void;
+  onMove?: (ev: PointerEvent, opts: CallbackOptions) => void;
 
   /**
    * On resize end callback.
    */
-  onEnd?: (ev: Event, opts: CallbackOptions) => void;
+  onEnd?: (ev: PointerEvent, opts: CallbackOptions) => void;
 
   /**
    * On container update callback.
@@ -222,6 +223,20 @@ export interface ResizerOptions {
    * Where to append resize container (default body element).
    */
   appendTo?: HTMLElement;
+
+  /**
+   * When enabled, the resizer will emit updates only if the size of the element
+   * changes during a drag operation.
+   *
+   * By default, the resizer triggers update callbacks even if the pointer
+   * doesn’t move (e.g., on click or tap without dragging). Set this option to `true`
+   * to suppress those "no-op" updates and emit only meaningful changes.
+   *
+   * @default false
+   */
+  updateOnMove?: boolean;
+
+  docs?: Document[];
 }
 
 type Handlers = Record<string, HTMLElement | null>;
@@ -261,6 +276,7 @@ export default class Resizer {
   delta?: Position;
   currentPos?: Position;
   docs?: Document[];
+  moved = false;
   keys?: { shift: boolean; ctrl: boolean; alt: boolean };
   mousePosFetcher?: ResizerOptions['mousePosFetcher'];
   updateTarget?: ResizerOptions['updateTarget'];
@@ -415,7 +431,7 @@ export default class Resizer {
    * Returns documents
    */
   getDocumentEl() {
-    return [this.el!.ownerDocument, document];
+    return this.opts.docs || [this.el!.ownerDocument, document];
   }
 
   /**
@@ -460,19 +476,21 @@ export default class Resizer {
    * Start resizing
    * @param  {Event} e
    */
-  start(ev: Event) {
-    const e = ev as PointerEvent;
-    // @ts-ignore Right or middel click
-    if (e.button !== 0) return;
+  start(e: PointerEvent) {
+    const { el, opts = {} } = this;
+    this.moved = false;
+
+    if (e.button !== 0 || !el) return;
+
     e.preventDefault();
     e.stopPropagation();
-    const el = this.el!;
+    this.selectedHandler?.setPointerCapture(e.pointerId);
     const parentEl = this.getParentEl();
     const resizer = this;
-    const config = this.opts || {};
+    const config = opts;
     const mouseFetch = this.mousePosFetcher;
     const attrName = 'data-' + config.prefix + 'handler';
-    const rect = this.getElementPos(el!, { avoidFrameZoom: true, avoidFrameOffset: true });
+    const rect = this.getElementPos(el, { avoidFrameZoom: true, avoidFrameOffset: true });
     const parentRect = this.getElementPos(parentEl!);
     const target = e.target as HTMLElement;
     this.handlerAttr = target.getAttribute(attrName)!;
@@ -510,62 +528,64 @@ export default class Resizer {
     on(docs, 'pointerup', this.stop);
     isFunction(this.onStart) && this.onStart(e, { docs, config, el, resizer });
     this.toggleFrames(true);
-    this.move(e);
+    !config.updateOnMove && this.move(e);
   }
 
   /**
    * While resizing
    * @param  {Event} e
    */
-  move(ev: PointerEvent | Event) {
-    const e = ev as PointerEvent;
-    const onMove = this.onMove;
-    const mouseFetch = this.mousePosFetcher;
-    const currentPos = mouseFetch
-      ? mouseFetch(e)
-      : {
-          x: e.clientX,
-          y: e.clientY,
-        };
+  move(ev: PointerEvent) {
+    this.moved = true;
+    const el = this.el!;
+    const config = this.opts;
+    const docs = this.docs || this.getDocumentEl();
+    const currentPos = this.mousePosFetcher?.(ev) || {
+      x: ev.clientX,
+      y: ev.clientY,
+    };
     this.currentPos = currentPos;
     this.delta = {
       x: currentPos.x - this.startPos!.x,
       y: currentPos.y - this.startPos!.y,
     };
     this.keys = {
-      shift: e.shiftKey,
-      ctrl: e.ctrlKey,
-      alt: e.altKey,
+      shift: ev.shiftKey,
+      ctrl: ev.ctrlKey,
+      alt: ev.altKey,
     };
-
     this.rectDim = this.calc(this);
-    this.updateRect(false);
-
-    // Move callback
-    onMove && onMove(e);
+    this.updateRect(false, ev);
+    this.onMove?.(ev, { docs, config, el, resizer: this });
   }
 
   /**
    * Stop resizing
-   * @param  {Event} e
+   * @param  {Event} ev
    */
-  stop(e: Event) {
+  stop(ev: PointerEvent) {
     const el = this.el!;
     const config = this.opts;
     const docs = this.docs || this.getDocumentEl();
     off(docs, 'pointermove', this.move);
     off(docs, 'keydown', this.handleKeyDown);
     off(docs, 'pointerup', this.stop);
-    this.updateRect(true);
+
+    if (this.moved || !config.updateOnMove) {
+      this.updateRect(true, ev);
+    }
+
+    this.selectedHandler?.releasePointerCapture(ev.pointerId);
     this.toggleFrames();
-    isFunction(this.onEnd) && this.onEnd(e, { docs, config, el, resizer: this });
+    this.onEnd?.(ev, { docs, config, el, resizer: this });
+    this.moved = false;
     delete this.docs;
   }
 
   /**
    * Update rect
    */
-  updateRect(store: boolean) {
+  updateRect(store: boolean, event: PointerEvent) {
     const el = this.el!;
     const resizer = this;
     const config = this.opts;
@@ -581,6 +601,7 @@ export default class Resizer {
         selectedHandler,
         resizer,
         config,
+        event,
       });
     } else {
       const elStyle = el.style as Record<string, any>;
@@ -634,7 +655,7 @@ export default class Resizer {
    * Handle ESC key
    * @param  {Event} e
    */
-  handleKeyDown(e: Event) {
+  handleKeyDown(e: PointerEvent) {
     // @ts-ignore
     if (e.keyCode === 27) {
       // Rollback to initial dimensions
@@ -645,9 +666,8 @@ export default class Resizer {
 
   /**
    * Handle mousedown to check if it's possible to start resizing
-   * @param  {Event} e
    */
-  handleMouseDown(e: Event) {
+  handleMouseDown(e: PointerEvent) {
     const el = e.target as HTMLElement;
 
     if (this.isHandler(el)) {

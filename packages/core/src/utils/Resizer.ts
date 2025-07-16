@@ -236,6 +236,12 @@ export interface ResizerOptions {
    */
   updateOnMove?: boolean;
 
+  /**
+   * By default, the resizer will try to perform adjustments on some units (eg. %), with this option
+   * you can skip this behavior.
+   */
+  skipUnitAdjustments?: boolean;
+
   docs?: Document[];
 }
 
@@ -694,11 +700,12 @@ export default class Resizer {
     const deltaY = data.delta!.y;
     const parentW = this.parentDim!.w;
     const parentH = this.parentDim!.h;
-    const unitWidth = this.opts.unitWidth;
-    const unitHeight = this.opts.unitHeight;
+    const { unitWidth, unitHeight, skipUnitAdjustments } = opts;
     const parentRect = this.getParentRect();
-    const startW = unitWidth === '%' ? (startDim.w / 100) * parentW : startDim.w;
-    const startH = unitHeight === '%' ? (startDim.h / 100) * parentH : startDim.h;
+    const isWidthPercent = unitWidth === '%' && !skipUnitAdjustments;
+    const isHeightPercent = unitHeight === '%' && !skipUnitAdjustments;
+    const startW = isWidthPercent ? (startDim.w / 100) * parentW : startDim.w;
+    const startH = isHeightPercent ? (startDim.h / 100) * parentH : startDim.h;
 
     const box: RectDim = {
       t: startDim.t - parentRect.top,
@@ -711,37 +718,33 @@ export default class Resizer {
 
     var attr = data.handlerAttr!;
     if (~attr.indexOf('r')) {
-      value =
-        unitWidth === '%'
-          ? normalizeFloat(((startW + deltaX * step) / parentW) * 100, 0.01)
-          : normalizeFloat(startW + deltaX * step, step);
+      value = isWidthPercent
+        ? normalizeFloat(((startW + deltaX * step) / parentW) * 100, 0.01)
+        : normalizeFloat(startW + deltaX * step, step);
       value = Math.max(minDim, value);
       maxDim && (value = Math.min(maxDim, value));
       box.w = value;
     }
     if (~attr.indexOf('b')) {
-      value =
-        unitHeight === '%'
-          ? normalizeFloat(((startH + deltaY * step) / parentH) * 100, 0.01)
-          : normalizeFloat(startH + deltaY * step, step);
+      value = isHeightPercent
+        ? normalizeFloat(((startH + deltaY * step) / parentH) * 100, 0.01)
+        : normalizeFloat(startH + deltaY * step, step);
       value = Math.max(minDim, value);
       maxDim && (value = Math.min(maxDim, value));
       box.h = value;
     }
     if (~attr.indexOf('l')) {
-      value =
-        unitWidth === '%'
-          ? normalizeFloat(((startW - deltaX * step) / parentW) * 100, 0.01)
-          : normalizeFloat(startW - deltaX * step, step);
+      value = isWidthPercent
+        ? normalizeFloat(((startW - deltaX * step) / parentW) * 100, 0.01)
+        : normalizeFloat(startW - deltaX * step, step);
       value = Math.max(minDim, value);
       maxDim && (value = Math.min(maxDim, value));
       box.w = value;
     }
     if (~attr.indexOf('t')) {
-      value =
-        unitHeight === '%'
-          ? normalizeFloat(((startH - deltaY * step) / parentH) * 100, 0.01)
-          : normalizeFloat(startH - deltaY * step, step);
+      value = isHeightPercent
+        ? normalizeFloat(((startH - deltaY * step) / parentH) * 100, 0.01)
+        : normalizeFloat(startH - deltaY * step, step);
       value = Math.max(minDim, value);
       maxDim && (value = Math.min(maxDim, value));
       box.h = value;

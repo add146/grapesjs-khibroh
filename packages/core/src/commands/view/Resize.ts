@@ -66,6 +66,11 @@ export interface ConvertPxToUnitProps {
   el: HTMLElement;
   valuePx: number;
   unit?: LiteralUnion<ConvertUnitsToPx, string>;
+  elComputedStyle?: CSSStyleDeclaration;
+  /**
+   * If true, the conversion will be done as height (requred for % units).
+   */
+  isHeight?: boolean;
   /**
    * @default 3
    */
@@ -116,6 +121,7 @@ export default {
     const el = elOpts || componentView?.el || component.getEl()!;
     const resizeEventOpts = { component, el };
     let modelToStyle: StyleableModel;
+    let elComputedStyle: CSSStyleDeclaration;
 
     const toggleBodyClass = (method: string, e: any, opts: any) => {
       const docs = opts.docs;
@@ -133,26 +139,28 @@ export default {
       posFetcher: canvasView.getElementPos.bind(canvasView),
       mousePosFetcher: Canvas.getMouseRelativePos.bind(Canvas),
       docs: [document],
-      onStart(ev, opts) {
+      updateOnMove: true,
+      skipUnitAdjustments: true,
+      onStart: (ev, opts) => {
         onStart(ev, opts);
         const { el, config, resizer } = opts;
         const { keyHeight, keyWidth, currentUnit, keepAutoHeight, keepAutoWidth } = config;
         toggleBodyClass('add', ev, opts);
         modelToStyle = em.Styles.getModelToStyle(component);
-        const computedStyle = getComputedStyle(el);
+        elComputedStyle = getComputedStyle(el);
         const modelStyle = modelToStyle.getStyle();
         const rectStart = { ...resizer.startDim! };
 
         let currentWidth = modelStyle[keyWidth!] as string;
         config.autoWidth = keepAutoWidth && currentWidth === 'auto';
         if (isNaN(parseFloat(currentWidth))) {
-          currentWidth = computedStyle[keyWidth as any];
+          currentWidth = elComputedStyle[keyWidth as any];
         }
 
         let currentHeight = modelStyle[keyHeight!] as string;
         config.autoHeight = keepAutoHeight && currentHeight === 'auto';
         if (isNaN(parseFloat(currentHeight))) {
-          currentHeight = computedStyle[keyHeight as any];
+          currentHeight = elComputedStyle[keyHeight as any];
         }
 
         const valueWidth = parseFloat(currentWidth);
@@ -188,8 +196,7 @@ export default {
         options.afterStart?.();
       },
 
-      // Update all positioned elements (eg. component toolbar)
-      onMove(event, opts) {
+      onMove: (event, opts) => {
         onMove(event, opts);
         const { resizer } = opts;
         const eventProps: ComponentResizeEventMoveProps = {
@@ -203,7 +210,7 @@ export default {
         editor.trigger(ComponentsEvents.resize, { ...eventProps, type: 'move' });
       },
 
-      onEnd(event, opts) {
+      onEnd: (event, opts) => {
         onEnd(event, opts);
         toggleBodyClass('remove', event, opts);
         const { resizer } = opts;
@@ -238,6 +245,7 @@ export default {
             ? 'auto'
             : this.convertPxToUnit({
                 el,
+                elComputedStyle,
                 valuePx: width,
                 unit: unitWidth,
               });
@@ -248,8 +256,10 @@ export default {
             ? 'auto'
             : this.convertPxToUnit({
                 el,
+                elComputedStyle,
                 valuePx: rect.h,
                 unit: unitHeight,
+                isHeight: true,
               });
         }
 
@@ -274,7 +284,8 @@ export default {
           event,
           style,
           updateStyle,
-          convertPxToUnit: (props: Omit<ConvertPxToUnitProps, 'el'>) => this.convertPxToUnit({ el, ...props }),
+          convertPxToUnit: (props: Omit<ConvertPxToUnitProps, 'el'>) =>
+            this.convertPxToUnit({ el, elComputedStyle, ...props }),
           delta: resizer.delta!,
           pointer: resizer.currentPos!,
         };
@@ -304,7 +315,7 @@ export default {
   },
 
   convertPxToUnit(props: ConvertPxToUnitProps): string {
-    const { el, valuePx, unit, dpi = 96, roundDecimals = 3 } = props;
+    const { el, valuePx, unit, dpi = 96, roundDecimals = 3, isHeight, elComputedStyle } = props;
     const win = el.ownerDocument.defaultView;
     const winWidth = win?.innerWidth || 1;
     const winHeight = window.innerHeight || 1;
@@ -344,7 +355,11 @@ export default {
         break;
       }
       case ConvertUnitsToPx.perc: {
-        const parentSize = el.parentElement?.offsetWidth || 1;
+        const { parentElement, offsetParent } = el;
+        const parentEl = elComputedStyle?.position === 'absolute' ? (offsetParent as HTMLElement) : parentElement;
+        const parentWidth = parentEl?.offsetWidth || 1;
+        const parentHeight = parentEl?.offsetHeight || 1;
+        const parentSize = isHeight ? parentHeight : parentWidth;
         valueResult = (valuePx / parentSize) * 100;
         break;
       }

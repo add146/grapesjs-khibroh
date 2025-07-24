@@ -567,11 +567,12 @@ export default class Editor implements IBaseModule<EditorConfig> {
   /**
    * Load data from the JSON project
    * @param {Object} data Project to load
+   * @param {Object} [options] Custom options that could be passed to the project load events.
    * @example
    * editor.loadProjectData({ pages: [...], styles: [...], ... })
    */
-  loadProjectData(data: ProjectData) {
-    return this.em.loadData(data);
+  loadProjectData(data: ProjectData, options: EditorLoadOptions & Record<string, unknown> = {}) {
+    return this.em.loadData(data, options);
   }
 
   storeData() {

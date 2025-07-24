@@ -581,7 +581,7 @@ export default class Resizer {
       this.updateRect(true, ev);
     }
 
-    this.selectedHandler?.releasePointerCapture(ev.pointerId);
+    ev.pointerId && this.selectedHandler?.releasePointerCapture(ev.pointerId);
     this.toggleFrames();
     this.onEnd?.(ev, { docs, config, el, resizer: this });
     this.moved = false;

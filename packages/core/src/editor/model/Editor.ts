@@ -119,6 +119,7 @@ export default class EditorModel extends Model {
   destroyed = false;
   _config: InitEditorConfig;
   _storageTimeout?: ReturnType<typeof setTimeout>;
+  _isStoring: boolean = false;
   attrsOrig: any;
   timedInterval?: ReturnType<typeof setTimeout>;
   updateItr?: ReturnType<typeof setTimeout>;
@@ -869,9 +870,19 @@ export default class EditorModel extends Model {
    * @public
    */
   async store<T extends StorageOptions>(options?: T) {
+    if (this._isStoring) return;
+    this._isStoring = true;
+    // We use a 1ms timeout to defer the cleanup to the next tick of the event loop.
+    // This prevents a race condition where a store operation, like 'sync:content',
+    // might increase the dirty count before it can be properly cleared.
+    setTimeout(() => {
+      this.clearDirtyCount();
+    }, 1);
     const data = this.storeData();
     await this.Storage.store(data, options);
-    this.clearDirtyCount();
+    setTimeout(() => {
+      this._isStoring = false;
+    }, 1);
     return data;
   }
 

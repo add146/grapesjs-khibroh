@@ -315,7 +315,7 @@ TComp> {
    * @private
    * */
   updateClasses() {
-    const str = this.model.classes.pluck('name').join(' ');
+    const str = this.model.classes.pluck?.('name').join(' ') || '';
     this.setAttribute('class', str);
 
     // Regenerate status class

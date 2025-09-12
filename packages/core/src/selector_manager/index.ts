@@ -292,7 +292,7 @@ export default class SelectorManager extends ItemManagerModule<SelectorManagerCo
     const added: Selector[] = [];
 
     if (isString(classes)) {
-      classes = classes.trim().split(' ');
+      classes = classes.trim().split(' ').filter(Boolean);
     }
 
     classes.forEach((name) => added.push(this.addSelector(name) as Selector));

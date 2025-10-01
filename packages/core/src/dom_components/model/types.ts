@@ -19,7 +19,11 @@ export type DraggableDroppableFn = (source: Component, target: Component, index?
 
 export interface AddComponentsOption extends AddOptions, OptionAsDocument {}
 
-export interface ResetComponentsOptions extends AddComponentsOption {
+export interface UpdateComponentsOptions extends AddComponentsOption {
+  skipViewUpdate?: boolean;
+}
+
+export interface ResetComponentsOptions extends UpdateComponentsOptions {
   previousModels?: Component[];
   keepIds?: string[];
   skipDomReset?: boolean;

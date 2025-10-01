@@ -164,7 +164,7 @@ Component> {
     const cssc = em?.Css;
     const allByID = domc?.allById() || {};
     const parsed = this.parseString(input, opts);
-    const newCmps = getComponentsFromDefs(parsed, allByID, opts);
+    const newCmps = getComponentsFromDefs(parsed, allByID, { skipViewUpdate: true, ...opts });
     const { visitedCmps = {} } = opts;
 
     // Clone styles for duplicated components

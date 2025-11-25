@@ -81,80 +81,196 @@
     </div>
 
     <script type="text/javascript">
-      var editor = grapesjs.init({
-        showOffsets: 1,
-        noticeOnUnload: 0,
-        container: '#gjs',
-        height: '100%',
-        fromElement: true,
-        storageManager: { autoload: 0 },
-        styleManager: {
-          sectors: [
+      const editortest = grapesjs.init({
+        headless: true,
+        projectData: {
+          pages: [
             {
-              name: 'General',
-              open: false,
-              buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom'],
-            },
-            {
-              name: 'Flex',
-              open: false,
-              buildProps: [
-                'flex-direction',
-                'flex-wrap',
-                'justify-content',
-                'align-items',
-                'align-content',
-                'order',
-                'flex-basis',
-                'flex-grow',
-                'flex-shrink',
-                'align-self',
+              frames: [
+                {
+                  component: {
+                    type: 'wrapper',
+                    stylable: [
+                      'background',
+                      'background-color',
+                      'background-image',
+                      'background-repeat',
+                      'background-attachment',
+                      'background-position',
+                      'background-size',
+                    ],
+                    attributes: {
+                      id: 'body',
+                    },
+                    components: [
+                      {
+                        tagName: 'section',
+                        components: [
+                          {
+                            tagName: 'h1',
+                            type: 'text',
+                            attributes: {
+                              id: 'main-title',
+                            },
+                            components: [
+                              {
+                                type: 'textnode',
+                                content: 'This is a simple title',
+                              },
+                            ],
+                          },
+                          {
+                            type: 'text',
+                            components: [
+                              {
+                                type: 'textnode',
+                                content: 'This is just a Lorem text: Lorem ipsum dolor sit amet',
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
               ],
+              id: 'ljc0blhC1ZeiCYyY',
             },
             {
-              name: 'Dimension',
-              open: false,
-              buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding'],
-            },
-            {
-              name: 'Typography',
-              open: false,
-              buildProps: [
-                'font-family',
-                'font-size',
-                'font-weight',
-                'letter-spacing',
-                'color',
-                'line-height',
-                'text-shadow',
+              frames: [
+                {
+                  component: {
+                    type: 'wrapper',
+                    stylable: [
+                      'background',
+                      'background-color',
+                      'background-image',
+                      'background-repeat',
+                      'background-attachment',
+                      'background-position',
+                      'background-size',
+                    ],
+                    attributes: {
+                      id: 'body',
+                    },
+                    components: [
+                      {
+                        tagName: 'section',
+                        components: [
+                          {
+                            tagName: 'h1',
+                            type: 'text',
+                            attributes: {
+                              id: 'main-title',
+                            },
+                            components: [
+                              {
+                                type: 'textnode',
+                                content: 'This is another title',
+                              },
+                            ],
+                          },
+                          {
+                            type: 'text',
+                            components: [
+                              {
+                                type: 'textnode',
+                                content: 'Some other text',
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
               ],
-            },
-            {
-              name: 'Decorations',
-              open: false,
-              buildProps: [
-                'border-radius-c',
-                'background-color',
-                'border-radius',
-                'border',
-                'box-shadow',
-                'background',
-              ],
-            },
-            {
-              name: 'Extra',
-              open: false,
-              buildProps: ['transition', 'perspective', 'transform'],
+              id: '1zKkQnGVzy8nKXKE',
             },
           ],
         },
       });
 
-      editor.BlockManager.add('testBlock', {
-        label: 'Block',
-        attributes: { class: 'gjs-fonts gjs-f-b1' },
-        content: `<div style="padding-top:50px; padding-bottom:50px; text-align:center">Test block</div>`,
+      let pages = editortest.Pages.getAll().map((page) => {
+        const component = page.getMainComponent();
+        return editortest.getHtml({ component });
       });
+
+      console.log(pages);
+      // var editor = grapesjs.init({
+      //   showOffsets: 1,
+      //   noticeOnUnload: 0,
+      //   container: '#gjs',
+      //   height: '100%',
+      //   fromElement: true,
+      //   storageManager: { autoload: 0 },
+      //   styleManager: {
+      //     sectors: [
+      //       {
+      //         name: 'General',
+      //         open: false,
+      //         buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom'],
+      //       },
+      //       {
+      //         name: 'Flex',
+      //         open: false,
+      //         buildProps: [
+      //           'flex-direction',
+      //           'flex-wrap',
+      //           'justify-content',
+      //           'align-items',
+      //           'align-content',
+      //           'order',
+      //           'flex-basis',
+      //           'flex-grow',
+      //           'flex-shrink',
+      //           'align-self',
+      //         ],
+      //       },
+      //       {
+      //         name: 'Dimension',
+      //         open: false,
+      //         buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding'],
+      //       },
+      //       {
+      //         name: 'Typography',
+      //         open: false,
+      //         buildProps: [
+      //           'font-family',
+      //           'font-size',
+      //           'font-weight',
+      //           'letter-spacing',
+      //           'color',
+      //           'line-height',
+      //           'text-shadow',
+      //         ],
+      //       },
+      //       {
+      //         name: 'Decorations',
+      //         open: false,
+      //         buildProps: [
+      //           'border-radius-c',
+      //           'background-color',
+      //           'border-radius',
+      //           'border',
+      //           'box-shadow',
+      //           'background',
+      //         ],
+      //       },
+      //       {
+      //         name: 'Extra',
+      //         open: false,
+      //         buildProps: ['transition', 'perspective', 'transform'],
+      //       },
+      //     ],
+      //   },
+      // });
+
+      // editor.BlockManager.add('testBlock', {
+      //   label: 'Block',
+      //   attributes: { class: 'gjs-fonts gjs-f-b1' },
+      //   content: `<div style="padding-top:50px; padding-bottom:50px; text-align:center">Test block</div>`,
+      // });
     </script>
   </body>
 </html>

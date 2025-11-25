@@ -316,7 +316,7 @@ export default class Component extends StyleableModel<ComponentProperties> {
     };
     const attrs = this.dataResolverWatchers.getValueOrResolver('attributes', defaultAttrs);
     this.setAttributes(attrs);
-    this.ccid = Component.createId(this, opt);
+    this.ccid = Component.createId(this, opt as any);
     this.preInit();
     this.initClasses();
     this.initComponents();
@@ -1644,29 +1644,37 @@ export default class Component extends StyleableModel<ComponentProperties> {
    */
   toJSON(opts: ObjectAny = {}): ComponentDefinition {
     let obj = super.toJSON(opts, { attributes: this.getAttributes() });
-    delete obj.dataResolverWatchers;
-    delete obj.attributes.class;
-    delete obj.toolbar;
-    delete obj.traits;
-    delete obj.status;
-    delete obj.open; // used in Layers
-    delete obj._undoexc;
-    delete obj.delegate;
+    delete (obj as any).dataResolverWatchers;
+    delete (obj as any).attributes.class;
+    delete (obj as any).toolbar;
+    delete (obj as any).traits;
+    delete (obj as any).status;
+    delete (obj as any).open;
+    delete (obj as any)._undoexc;
+    delete (obj as any).delegate;
+
     if (this.collectionsStateMap && Object.getOwnPropertyNames(this.collectionsStateMap).length > 0) {
-      delete obj[keySymbol];
-      delete obj[keySymbolOvrd];
-      delete obj[keySymbols];
+      delete (obj as any)[keySymbol];
+      delete (obj as any)[keySymbolOvrd];
+      delete (obj as any)[keySymbols];
     }
 
     if (!opts.fromUndo) {
-      const symbol = obj[keySymbol];
-      const symbols = obj[keySymbols];
+      const symbol = (obj as any)[keySymbol];
+      const symbols = (obj as any)[keySymbols];
       if (symbols && isArray(symbols)) {
-        obj[keySymbols] = symbols.filter((i) => i).map((i) => (i.getId ? i.getId() : i));
+        (obj as any)[keySymbols] = symbols.filter((i: any) => i).map((i: any) => (i.getId ? i.getId() : i));
       }
       if (symbol && !isString(symbol)) {
-        obj[keySymbol] = symbol.getId();
+        (obj as any)[keySymbol] = symbol.getId();
       }
+    }
+
+    // ★ Добавляем "реальный" component id,
+    //   если он отличается от attributes.id
+    const attrs = this.get('attributes') || {};
+    if (this.ccid && attrs.id && this.ccid !== attrs.id) {
+      (obj as any).id = this.ccid;
     }
 
     if (this.em.getConfig().avoidDefaults) {
@@ -2066,33 +2074,88 @@ export default class Component extends StyleableModel<ComponentProperties> {
     const current = list[id];
 
     if (!current) {
-      // Insert in list
+      // Первое появление такого id в трекере
       list[id] = model;
     } else if (current !== model) {
-      // Create new ID
-      const nextId = Component.getIncrementId(id, list);
-      model.setId(nextId);
-      list[nextId] = model;
+      const currentPage = current.page;
+      const modelPage = model.page;
+      const samePage = !!currentPage && !!modelPage && currentPage === modelPage;
+
+      if (samePage) {
+        // ★ Та же страница: старое поведение
+        const nextId = Component.getIncrementId(id, list);
+        model.setId(nextId);
+        list[nextId] = model;
+      } else {
+        // ★ Другая страница:
+        //   - attributes.id НЕ меняем
+        //   - убеждаемся, что внутренний ccid уникален в трекере
+        const baseId = (model as any).ccid || id;
+        let nextId = baseId;
+
+        while (list[nextId] && list[nextId] !== model) {
+          nextId = Component.getIncrementId(nextId, list);
+        }
+
+        (model as any).ccid = nextId;
+        list[nextId] = model;
+      }
     }
 
     model.components().forEach((i) => Component.ensureInList(i));
   }
 
-  static createId(model: Component, opts: any = {}) {
+  static createId(
+    model: Component,
+    opts: {
+      keepIds?: string[];
+      idMap?: PrevToNewIdMap;
+      updatedIds?: Record<string, ComponentDefinitionDefined[]>;
+    } = {},
+  ) {
     const list = Component.getList(model);
     const { idMap = {} } = opts;
-    let { id } = model.get('attributes')!;
-    let nextId;
+    const attrs = model.get('attributes') || {};
+    const attrId = attrs.id as string | undefined;
+    let nextId: string;
 
-    if (id) {
-      nextId = Component.getIncrementId(id, list, opts);
-      model.setId(nextId);
-      if (id !== nextId) idMap[id] = nextId;
+    if (attrId) {
+      const existing = list[attrId] as Component | undefined;
+
+      // Первый раз видим такой id — сохраняем как есть
+      if (!existing || existing === model) {
+        nextId = attrId;
+        if (!list[nextId]) {
+          list[nextId] = model;
+        }
+      } else {
+        const existingPage = existing.page;
+        const newPage = model.page;
+        const samePage = !!existingPage && !!newPage && existingPage === newPage;
+
+        if (samePage) {
+          // ★ Та же страница: старое поведение — меняем attributes.id
+          nextId = Component.getIncrementId(attrId, list, opts);
+          model.setId(nextId);
+          if (attrId !== nextId) {
+            idMap[attrId] = nextId;
+          }
+          list[nextId] = model;
+        } else {
+          // ★ Другая страница:
+          //   - attributes.id оставляем attrId
+          //   - создаём только внутренний ID для трекинга
+          nextId = Component.getIncrementId(attrId, list, opts);
+          // не вызываем setId, чтобы не трогать attributes.id
+          list[nextId] = model;
+        }
+      }
     } else {
+      // Без attributes.id — как раньше
       nextId = Component.getNewId(list);
+      list[nextId] = model;
     }
 
-    list[nextId] = model;
     return nextId;
   }
 

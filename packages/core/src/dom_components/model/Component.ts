@@ -2074,7 +2074,6 @@ export default class Component extends StyleableModel<ComponentProperties> {
     const current = list[id];
 
     if (!current) {
-      // Первое появление такого id в трекере
       list[id] = model;
     } else if (current !== model) {
       const currentPage = current.page;
@@ -2082,14 +2081,10 @@ export default class Component extends StyleableModel<ComponentProperties> {
       const samePage = !!currentPage && !!modelPage && currentPage === modelPage;
 
       if (samePage) {
-        // ★ Та же страница: старое поведение
         const nextId = Component.getIncrementId(id, list);
         model.setId(nextId);
         list[nextId] = model;
       } else {
-        // ★ Другая страница:
-        //   - attributes.id НЕ меняем
-        //   - убеждаемся, что внутренний ccid уникален в трекере
         const baseId = (model as any).ccid || id;
         let nextId = baseId;
 
@@ -2122,7 +2117,6 @@ export default class Component extends StyleableModel<ComponentProperties> {
     if (attrId) {
       const existing = list[attrId] as Component | undefined;
 
-      // Первый раз видим такой id — сохраняем как есть
       if (!existing || existing === model) {
         nextId = attrId;
         if (!list[nextId]) {
@@ -2134,7 +2128,6 @@ export default class Component extends StyleableModel<ComponentProperties> {
         const samePage = !!existingPage && !!newPage && existingPage === newPage;
 
         if (samePage) {
-          // ★ Та же страница: старое поведение — меняем attributes.id
           nextId = Component.getIncrementId(attrId, list, opts);
           model.setId(nextId);
           if (attrId !== nextId) {
@@ -2142,16 +2135,12 @@ export default class Component extends StyleableModel<ComponentProperties> {
           }
           list[nextId] = model;
         } else {
-          // ★ Другая страница:
-          //   - attributes.id оставляем attrId
-          //   - создаём только внутренний ID для трекинга
           nextId = Component.getIncrementId(attrId, list, opts);
-          // не вызываем setId, чтобы не трогать attributes.id
+
           list[nextId] = model;
         }
       }
     } else {
-      // Без attributes.id — как раньше
       nextId = Component.getNewId(list);
       list[nextId] = model;
     }
@@ -2161,7 +2150,6 @@ export default class Component extends StyleableModel<ComponentProperties> {
 
   static getNewId(list: ObjectAny) {
     const count = Object.keys(list).length;
-    // Testing 1000000 components with `+ 2` returns 0 collisions
     const ilen = count.toString().length + 2;
     const uid = (Math.random() + 1.1).toString(36).slice(-ilen);
     let newId = `i${uid}`;

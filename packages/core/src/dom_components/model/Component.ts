@@ -1644,19 +1644,19 @@ export default class Component extends StyleableModel<ComponentProperties> {
    */
   toJSON(opts: ObjectAny = {}): ComponentDefinition {
     let obj = super.toJSON(opts, { attributes: this.getAttributes() });
-    delete (obj as any).dataResolverWatchers;
-    delete (obj as any).attributes.class;
-    delete (obj as any).toolbar;
-    delete (obj as any).traits;
-    delete (obj as any).status;
-    delete (obj as any).open;
-    delete (obj as any)._undoexc;
-    delete (obj as any).delegate;
+    delete obj.dataResolverWatchers;
+    delete obj.attributes.class;
+    delete obj.toolbar;
+    delete obj.traits;
+    delete obj.status;
+    delete obj.open;
+    delete obj._undoexc;
+    delete obj.delegate;
 
     if (this.collectionsStateMap && Object.getOwnPropertyNames(this.collectionsStateMap).length > 0) {
-      delete (obj as any)[keySymbol];
-      delete (obj as any)[keySymbolOvrd];
-      delete (obj as any)[keySymbols];
+      delete obj[keySymbol];
+      delete obj[keySymbolOvrd];
+      delete obj[keySymbols];
     }
 
     if (!opts.fromUndo) {

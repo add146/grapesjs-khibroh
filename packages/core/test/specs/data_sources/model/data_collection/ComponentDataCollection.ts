@@ -105,15 +105,12 @@ describe('Collection component', () => {
         expect(cmp.toHTML()).toBe(`<${tagName} id="${cmp.getId()}">${innerHTML}</${tagName}>`);
         expect(cmp.getEl()?.innerHTML).toBe(innerHTML);
 
-        const json = JSON.parse(JSON.stringify(cmp.toJSON()));
-        expect(json).toEqual(
-          expect.objectContaining({
-            tagName,
-            dataResolver: cmp.get('dataResolver'),
-            type: cmp.getType(),
-            attributes: cmp.getAttributes(),
-          }),
-        );
+        expect(JSON.parse(JSON.stringify(cmp.toJSON()))).toEqual({
+          tagName: cmp.tagName,
+          dataResolver: cmp.get('dataResolver'),
+          type: cmp.getType(),
+          attributes: cmp.getAttributes(),
+        });
       };
 
       const checkRecordsWithInnerCmp = () => {

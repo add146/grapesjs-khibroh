@@ -1670,11 +1670,9 @@ export default class Component extends StyleableModel<ComponentProperties> {
       }
     }
 
-    // ★ Добавляем "реальный" component id,
-    //   если он отличается от attributes.id
     const attrs = this.get('attributes') || {};
     if (this.ccid && attrs.id && this.ccid !== attrs.id) {
-      (obj as any).id = this.ccid;
+      obj.id = this.ccid;
     }
 
     if (this.em.getConfig().avoidDefaults) {

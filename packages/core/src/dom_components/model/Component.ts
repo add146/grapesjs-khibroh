@@ -1649,10 +1649,9 @@ export default class Component extends StyleableModel<ComponentProperties> {
     delete obj.toolbar;
     delete obj.traits;
     delete obj.status;
-    delete obj.open;
+    delete obj.open; // used in Layers
     delete obj._undoexc;
     delete obj.delegate;
-
     if (this.collectionsStateMap && Object.getOwnPropertyNames(this.collectionsStateMap).length > 0) {
       delete obj[keySymbol];
       delete obj[keySymbolOvrd];
@@ -1660,19 +1659,14 @@ export default class Component extends StyleableModel<ComponentProperties> {
     }
 
     if (!opts.fromUndo) {
-      const symbol = (obj as any)[keySymbol];
-      const symbols = (obj as any)[keySymbols];
+      const symbol = obj[keySymbol];
+      const symbols = obj[keySymbols];
       if (symbols && isArray(symbols)) {
-        (obj as any)[keySymbols] = symbols.filter((i: any) => i).map((i: any) => (i.getId ? i.getId() : i));
+        obj[keySymbols] = symbols.filter((i) => i).map((i) => (i.getId ? i.getId() : i));
       }
       if (symbol && !isString(symbol)) {
-        (obj as any)[keySymbol] = symbol.getId();
+        obj[keySymbol] = symbol.getId();
       }
-    }
-
-    const attrs = this.get('attributes') || {};
-    if (this.ccid && attrs.id && this.ccid !== attrs.id) {
-      obj.id = this.ccid;
     }
 
     if (this.em.getConfig().avoidDefaults) {

@@ -104,6 +104,7 @@ describe('Collection component', () => {
         expect(cmp.getInnerHTML()).toBe(innerHTML);
         expect(cmp.toHTML()).toBe(`<${tagName} id="${cmp.getId()}">${innerHTML}</${tagName}>`);
         expect(cmp.getEl()?.innerHTML).toBe(innerHTML);
+
         expect(JSON.parse(JSON.stringify(cmp.toJSON()))).toEqual({
           tagName: cmp.tagName,
           dataResolver: cmp.get('dataResolver'),

@@ -316,7 +316,7 @@ export default class Component extends StyleableModel<ComponentProperties> {
     };
     const attrs = this.dataResolverWatchers.getValueOrResolver('attributes', defaultAttrs);
     this.setAttributes(attrs);
-    this.ccid = Component.createId(this, opt);
+    this.ccid = Component.createId(this, opt as any);
     this.preInit();
     this.initClasses();
     this.initComponents();
@@ -2066,39 +2066,82 @@ export default class Component extends StyleableModel<ComponentProperties> {
     const current = list[id];
 
     if (!current) {
-      // Insert in list
       list[id] = model;
     } else if (current !== model) {
-      // Create new ID
-      const nextId = Component.getIncrementId(id, list);
-      model.setId(nextId);
-      list[nextId] = model;
+      const currentPage = current.page;
+      const modelPage = model.page;
+      const samePage = !!currentPage && !!modelPage && currentPage === modelPage;
+
+      if (samePage) {
+        const nextId = Component.getIncrementId(id, list);
+        model.setId(nextId);
+        list[nextId] = model;
+      } else {
+        const baseId = (model as any).ccid || id;
+        let nextId = baseId;
+
+        while (list[nextId] && list[nextId] !== model) {
+          nextId = Component.getIncrementId(nextId, list);
+        }
+
+        (model as any).ccid = nextId;
+        list[nextId] = model;
+      }
     }
 
     model.components().forEach((i) => Component.ensureInList(i));
   }
 
-  static createId(model: Component, opts: any = {}) {
+  static createId(
+    model: Component,
+    opts: {
+      keepIds?: string[];
+      idMap?: PrevToNewIdMap;
+      updatedIds?: Record<string, ComponentDefinitionDefined[]>;
+    } = {},
+  ) {
     const list = Component.getList(model);
     const { idMap = {} } = opts;
-    let { id } = model.get('attributes')!;
-    let nextId;
+    const attrs = model.get('attributes') || {};
+    const attrId = attrs.id as string | undefined;
+    let nextId: string;
 
-    if (id) {
-      nextId = Component.getIncrementId(id, list, opts);
-      model.setId(nextId);
-      if (id !== nextId) idMap[id] = nextId;
+    if (attrId) {
+      const existing = list[attrId] as Component | undefined;
+
+      if (!existing || existing === model) {
+        nextId = attrId;
+        if (!list[nextId]) {
+          list[nextId] = model;
+        }
+      } else {
+        const existingPage = existing.page;
+        const newPage = model.page;
+        const samePage = !!existingPage && !!newPage && existingPage === newPage;
+
+        if (samePage) {
+          nextId = Component.getIncrementId(attrId, list, opts);
+          model.setId(nextId);
+          if (attrId !== nextId) {
+            idMap[attrId] = nextId;
+          }
+          list[nextId] = model;
+        } else {
+          nextId = Component.getIncrementId(attrId, list, opts);
+
+          list[nextId] = model;
+        }
+      }
     } else {
       nextId = Component.getNewId(list);
+      list[nextId] = model;
     }
 
-    list[nextId] = model;
     return nextId;
   }
 
   static getNewId(list: ObjectAny) {
     const count = Object.keys(list).length;
-    // Testing 1000000 components with `+ 2` returns 0 collisions
     const ilen = count.toString().length + 2;
     const uid = (Math.random() + 1.1).toString(36).slice(-ilen);
     let newId = `i${uid}`;

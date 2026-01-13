@@ -45,8 +45,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             'INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)'
         ).bind(id, email, passwordHash, name || null).run();
 
+        // Get JWT_SECRET with fallback
+        const jwtSecret = env.JWT_SECRET || 'khibroh-default-secret-key-2024';
+
         // Generate token
-        const token = await generateToken({ userId: id, email }, env.JWT_SECRET);
+        const token = await generateToken({ userId: id, email }, jwtSecret);
 
         return jsonResponse({
             success: true,

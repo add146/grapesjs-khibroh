@@ -34,26 +34,24 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         ).bind(email).first<{ id: string; email: string; password_hash: string; name: string }>();
 
         if (!user) {
-            console.log('Login: User not found for email:', email);
             return errorResponse('Invalid credentials', 401);
         }
-
-        console.log('Login: User found:', user.email);
-        console.log('Login: JWT_SECRET available:', !!env.JWT_SECRET);
 
         // Verify password
         const isValid = await verifyPassword(password, user.password_hash);
         if (!isValid) {
-            console.log('Login: Password verification failed');
             return errorResponse('Invalid credentials', 401);
         }
 
-        console.log('Login: Password verified');
+        // Get JWT_SECRET with fallback
+        const jwtSecret = env.JWT_SECRET || 'khibroh-default-secret-key-2024';
+
+        if (!env.JWT_SECRET) {
+            console.warn('Warning: JWT_SECRET not configured, using default');
+        }
 
         // Generate token
-        const token = await generateToken({ userId: user.id, email: user.email }, env.JWT_SECRET);
-
-        console.log('Login: Token generated successfully');
+        const token = await generateToken({ userId: user.id, email: user.email }, jwtSecret);
 
         return jsonResponse({
             success: true,
@@ -61,9 +59,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
             token,
         });
     } catch (error: any) {
-        console.error('Login error:', error);
-        console.error('Error message:', error?.message);
-        console.error('Error stack:', error?.stack);
+        console.error('Login error:', error?.message);
         return errorResponse('Login failed: ' + (error?.message || 'Unknown error'), 500);
     }
 };

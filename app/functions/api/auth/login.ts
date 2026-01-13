@@ -34,25 +34,36 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         ).bind(email).first<{ id: string; email: string; password_hash: string; name: string }>();
 
         if (!user) {
+            console.log('Login: User not found for email:', email);
             return errorResponse('Invalid credentials', 401);
         }
+
+        console.log('Login: User found:', user.email);
+        console.log('Login: JWT_SECRET available:', !!env.JWT_SECRET);
 
         // Verify password
         const isValid = await verifyPassword(password, user.password_hash);
         if (!isValid) {
+            console.log('Login: Password verification failed');
             return errorResponse('Invalid credentials', 401);
         }
 
+        console.log('Login: Password verified');
+
         // Generate token
         const token = await generateToken({ userId: user.id, email: user.email }, env.JWT_SECRET);
+
+        console.log('Login: Token generated successfully');
 
         return jsonResponse({
             success: true,
             user: { id: user.id, email: user.email, name: user.name },
             token,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
-        return errorResponse('Login failed', 500);
+        console.error('Error message:', error?.message);
+        console.error('Error stack:', error?.stack);
+        return errorResponse('Login failed: ' + (error?.message || 'Unknown error'), 500);
     }
 };

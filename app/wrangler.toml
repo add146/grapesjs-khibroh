@@ -13,6 +13,4 @@ database_id = "c8ca04c2-0ffe-49a7-953a-429f0485a386"
 binding = "R2_BUCKET"
 bucket_name = "khibroh-web-builder-assets"
 
-# Environment variables
-[vars]
-JWT_SECRET = "change-this-to-a-secure-secret-key"
+# JWT_SECRET is configured in Cloudflare Dashboard -> Variables and Secrets

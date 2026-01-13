@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Khibroh Web Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --bg-dark: #0f0f23;
+            --bg-card: #1a1a2e;
+            --bg-input: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --error: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-name {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+
+        .project-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-date {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-edit {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .btn-delete:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">🏗️ Khibroh Web Builder</div>
+        <div class="user-info">
+            <span class="user-name" id="user-name"></span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-header">
+            <h1 class="section-title">My Projects</h1>
+            <button class="btn-primary" onclick="showNewProjectModal()">
+                <span>+</span> New Project
+            </button>
+        </div>
+
+        <div id="projects-container">
+            <div class="loading">Loading projects...</div>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Create New Project</h2>
+            <form id="new-project-form">
+                <div class="form-group">
+                    <label for="project-name">Project Name</label>
+                    <input type="text" id="project-name" placeholder="My Awesome Website" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="hideModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let token = localStorage.getItem('token');
+        let user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        // Check auth
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // Set user name
+        document.getElementById('user-name').textContent = user.name || user.email;
+
+        // Fetch headers
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                const res = await fetch(API_BASE + '/projects', {
+                    headers: getHeaders()
+                });
+
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await res.json();
+                renderProjects(data.projects || []);
+            } catch (err) {
+                document.getElementById('projects-container').innerHTML =
+                    '<div class="empty-state"><h3>Error loading projects</h3><p>Please try again</p></div>';
+            }
+        }
+
+        // Render projects
+        function renderProjects(projects) {
+            const container = document.getElementById('projects-container');
+
+            if (projects.length === 0) {
+                container.innerHTML = `
+          <div class="empty-state">
+            <h3>No projects yet</h3>
+            <p>Create your first project to get started!</p>
+          </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = '<div class="projects-grid">' + projects.map(p => `
+        <div class="project-card" onclick="openProject('${p.id}')">
+          <div class="project-name">${escapeHtml(p.name)}</div>
+          <div class="project-date">Updated: ${new Date(p.updated_at).toLocaleDateString()}</div>
+          <div class="project-actions">
+            <button class="btn-small btn-edit" onclick="event.stopPropagation(); openProject('${p.id}')">Edit</button>
+            <button class="btn-small btn-delete" onclick="event.stopPropagation(); deleteProject('${p.id}', '${escapeHtml(p.name)}')">Delete</button>
+          </div>
+        </div>
+      `).join('') + '</div>';
+        }
+
+        // Open project in editor
+        function openProject(id) {
+            window.location.href = '/editor.html?project=' + id;
+        }
+
+        // Delete project
+        async function deleteProject(id, name) {
+            if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+
+            try {
+                await fetch(API_BASE + '/projects/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+                loadProjects();
+            } catch (err) {
+                alert('Failed to delete project');
+            }
+        }
+
+        // Show new project modal
+        function showNewProjectModal() {
+            document.getElementById('new-project-modal').classList.add('active');
+            document.getElementById('project-name').focus();
+        }
+
+        function hideModal() {
+            document.getElementById('new-project-modal').classList.remove('active');
+            document.getElementById('project-name').value = '';
+        }
+
+        // Create project
+        document.getElementById('new-project-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('project-name').value;
+
+            try {
+                const res = await fetch(API_BASE + '/projects', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ name })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    hideModal();
+                    window.location.href = '/editor.html?project=' + data.project.id;
+                } else {
+                    alert(data.error || 'Failed to create project');
+                }
+            } catch (err) {
+                alert('Failed to create project');
+            }
+        });
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial load
+        loadProjects();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor - Khibroh Web Builder</title>
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.21.10/dist/css/grapes.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg-dark: #0f0f23;
+            --bg-panel: #1a1a2e;
+            --border: #334155;
+            --text: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 16px;
+            height: 50px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: white;
+            font-size: 16px;
+        }
+
+        .top-bar-center {
+            display: flex;
+            gap: 4px;
+        }
+
+        .device-btn {
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+
+        .device-btn:hover,
+        .device-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+
+        .status {
+            font-size: 12px;
+            color: var(--text);
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Main Editor Area */
+        .editor-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+
+        /* Override GrapesJS styles */
+        .gjs-one-bg {
+            background-color: var(--bg-panel) !important;
+        }
+
+        .gjs-two-color {
+            color: var(--text) !important;
+        }
+
+        .gjs-three-bg {
+            background-color: #16213e !important;
+        }
+
+        .gjs-four-color,
+        .gjs-four-color-h:hover {
+            color: var(--primary) !important;
+        }
+
+        #gjs {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Fix canvas and panel layout */
+        .gjs-editor {
+            display: flex !important;
+            height: 100% !important;
+        }
+
+        .gjs-cv-canvas {
+            flex: 1;
+            height: 100%;
+            width: auto !important;
+            position: relative !important;
+            left: 0 !important;
+        }
+
+        .gjs-pn-panel {
+            position: relative !important;
+        }
+
+        .gjs-pn-views-container {
+            width: 280px !important;
+            min-width: 280px !important;
+            position: relative !important;
+            right: 0 !important;
+            top: 0 !important;
+            height: 100% !important;
+            overflow-y: auto;
+            background: var(--bg-panel) !important;
+            border-left: 1px solid var(--border);
+        }
+
+        .gjs-pn-views {
+            background: var(--bg-panel);
+            position: relative !important;
+        }
+
+        /* Fix right panels positioning */
+        .gjs-pn-options,
+        .gjs-pn-commands {
+            position: relative !important;
+        }
+
+        /* Hide only the duplicate device controls in GrapesJS panel */
+        .gjs-pn-devices-c {
+            display: none !important;
+        }
+
+        .gjs-block {
+            width: auto;
+            min-height: auto;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 3px;
+        }
+
+        .gjs-block:hover {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .gjs-block__media {
+            font-size: 28px;
+        }
+
+        .gjs-block-category .gjs-title {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .gjs-blocks-c {
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="/dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+            <span class="project-name" id="project-name">Loading...</span>
+        </div>
+
+        <div class="top-bar-center">
+            <button class="device-btn active" data-device="Desktop" title="Desktop"><i
+                    class="fas fa-desktop"></i></button>
+            <button class="device-btn" data-device="Tablet" title="Tablet"><i class="fas fa-tablet-alt"></i></button>
+            <button class="device-btn" data-device="Mobile portrait" title="Mobile"><i
+                    class="fas fa-mobile-alt"></i></button>
+        </div>
+
+        <div class="top-bar-right">
+            <span class="status" id="status"><i class="fas fa-circle" style="font-size: 8px; margin-right: 6px;"></i>
+                Ready</span>
+
+            <!-- Toolbar separator -->
+            <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
+
+            <!-- View Tools -->
+            <button class="btn btn-outline" id="btn-reload" title="Reload"><i class="fas fa-sync-alt"></i></button>
+            <button class="btn btn-outline" id="btn-preview" title="Preview"><i class="fas fa-eye"></i></button>
+            <button class="btn btn-outline" id="btn-fullscreen" title="Fullscreen"><i
+                    class="fas fa-expand"></i></button>
+            <button class="btn btn-outline" id="btn-code" title="View Code"><i class="fas fa-code"></i></button>
+
+            <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
+
+            <!-- Import/Export Tools -->
+            <button class="btn btn-outline" id="btn-import" title="Import HTML"><i class="fas fa-upload"></i></button>
+            <button class="btn btn-outline" id="btn-export" title="Export HTML"><i class="fas fa-download"></i></button>
+
+            <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
+
+            <!-- Edit Tools -->
+            <button class="btn btn-outline" id="btn-clear" title="Clear Canvas"><i
+                    class="fas fa-trash-alt"></i></button>
+            <button class="btn btn-outline" id="btn-undo" title="Undo"><i class="fas fa-undo"></i></button>
+            <button class="btn btn-outline" id="btn-redo" title="Redo"><i class="fas fa-redo"></i></button>
+
+            <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
+
+            <!-- Save -->
+            <button class="btn btn-primary" id="btn-save" title="Save Project"><i class="fas fa-save"></i> Save</button>
+        </div>
+    </div>
+
+    <div class="editor-container">
+        <!-- Left Sidebar with Panel Tabs -->
+        <div id="left-sidebar"
+            style="width: 50px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 10px;">
+            <button class="panel-tab active" data-panel="blocks" title="Blocks"
+                style="width: 40px; height: 40px; background: var(--primary); border: none; border-radius: 8px; color: white; cursor: pointer; margin-bottom: 8px; font-size: 16px;"><i
+                    class="fas fa-plus"></i></button>
+            <button class="panel-tab" data-panel="layers" title="Layers"
+                style="width: 40px; height: 40px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer; margin-bottom: 8px; font-size: 16px;"><i
+                    class="fas fa-layer-group"></i></button>
+            <button class="panel-tab" data-panel="styles" title="Styles"
+                style="width: 40px; height: 40px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer; margin-bottom: 8px; font-size: 16px;"><i
+                    class="fas fa-paint-brush"></i></button>
+            <button class="panel-tab" data-panel="traits" title="Properties"
+                style="width: 40px; height: 40px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer; margin-bottom: 8px; font-size: 16px;"><i
+                    class="fas fa-cog"></i></button>
+        </div>
+
+        <!-- Panels Container -->
+        <div id="panels-container"
+            style="width: 280px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;">
+            <div id="blocks-panel" class="panel-content" style="flex: 1; overflow-y: auto;"></div>
+            <div id="layers-panel" class="panel-content" style="flex: 1; overflow-y: auto; display: none;"></div>
+            <div id="styles-panel" class="panel-content" style="flex: 1; overflow-y: auto; display: none;"></div>
+            <div id="traits-panel" class="panel-content"
+                style="flex: 1; overflow-y: auto; display: none; padding: 10px;"></div>
+        </div>
+
+        <!-- GrapesJS Editor -->
+        <div id="gjs" style="flex: 1;"></div>
+    </div>
+
+    <script src="https://unpkg.com/grapesjs@0.21.10/dist/grapes.min.js"></script>
+    <script src="https://unpkg.com/grapesjs-blocks-basic@1.0.2/dist/index.js"></script>
+    <script>
+        const API_BASE = '/api';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('project');
+
+        if (!projectId) {
+            window.location.href = '/dashboard.html';
+        }
+
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+        function setStatus(text, isError = false) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<i class="fas fa-circle" style="font-size: 8px; margin-right: 6px; color: ${isError ? '#ef4444' : '#10b981'};"></i> ${text}`;
+        }
+
+        // Initialize GrapesJS with simplified config
+        const editor = grapesjs.init({
+            container: '#gjs',
+            height: '100%',
+            width: 'auto',
+            fromElement: false,
+            storageManager: false,
+            deviceManager: {
+                devices: [
+                    { name: 'Desktop', width: '' },
+                    { name: 'Tablet', width: '768px' },
+                    { name: 'Mobile portrait', width: '375px' }
+                ]
+            },
+            plugins: ['gjs-blocks-basic'],
+            pluginsOpts: {
+                'gjs-blocks-basic': {
+                    flexGrid: true,
+                    blocks: [] // Disable default blocks, we use custom blocks only
+                }
+            },
+            assetManager: {
+                upload: API_BASE + '/assets/upload',
+                uploadName: 'file',
+                headers: { 'Authorization': 'Bearer ' + token },
+                multiUpload: false,
+                params: { projectId },
+                autoAdd: true,
+                // Custom upload handler to parse our API response format
+                uploadFile: function (e) {
+                    const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+                    const formData = new FormData();
+
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('file', files[i]);
+                    }
+                    formData.append('projectId', projectId);
+
+                    fetch(API_BASE + '/assets/upload', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token },
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success && result.asset) {
+                                editor.AssetManager.add({
+                                    src: result.asset.url,
+                                    name: result.asset.filename,
+                                    type: result.asset.type.startsWith('image/') ? 'image' : 'file'
+                                });
+                                setStatus('Image uploaded ✓');
+                            } else {
+                                setStatus('Upload failed', true);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Upload error:', err);
+                            setStatus('Upload failed', true);
+                        });
+                }
+            },
+            canvas: {
+                styles: [
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+                ]
+            },
+            styleManager: {
+                sectors: [
+                    {
+                        name: 'General',
+                        open: false,
+                        buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom']
+                    },
+                    {
+                        name: 'Dimension',
+                        open: false,
+                        buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding']
+                    },
+                    {
+                        name: 'Typography',
+                        open: false,
+                        buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration', 'text-transform']
+                    },
+                    {
+                        name: 'Decorations',
+                        open: false,
+                        buildProps: ['opacity', 'border-radius', 'border', 'box-shadow', 'background', 'background-color']
+                    },
+                    {
+                        name: 'Flex',
+                        open: false,
+                        buildProps: ['flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'order', 'flex-basis', 'flex-grow', 'flex-shrink', 'align-self']
+                    },
+                    {
+                        name: 'Extra',
+                        open: false,
+                        buildProps: ['transition', 'perspective', 'transform', 'overflow', 'cursor']
+                    }
+                ],
+                appendTo: '#styles-panel'
+            },
+            blockManager: {
+                appendTo: '#blocks-panel'
+            },
+            layerManager: {
+                appendTo: '#layers-panel'
+            },
+            selectorManager: {
+                appendTo: '#styles-panel'
+            },
+            traitManager: {
+                appendTo: '#traits-panel'
+            },
+            panels: { defaults: [] } // Remove default GrapesJS panels
+        });
+
+        // Get Block Manager
+        const bm = editor.BlockManager;
+
+        // ============== CONTENT CATEGORY ==============
+        bm.add('text-block', {
+            label: 'Text',
+            category: 'Content',
+            content: '<div data-gjs-type="text" style="padding: 10px;">Insert your text here</div>',
+            media: '<i class="fa fa-font"></i>'
+        });
+
+        bm.add('button-block', {
+            label: 'Button',
+            category: 'Content',
+            content: '<a href="#" style="display: inline-block; padding: 12px 24px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Click Me</a>',
+            media: '<i class="fa fa-square"></i>'
+        });
+
+        bm.add('image-block', {
+            label: 'Image',
+            category: 'Content',
+            content: { type: 'image' },
+            media: '<i class="fa fa-image"></i>'
+        });
+
+        bm.add('divider-block', {
+            label: 'Divider',
+            category: 'Content',
+            content: '<hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 20px 0;">',
+            media: '<i class="fa fa-minus"></i>'
+        });
+
+        bm.add('social-block', {
+            label: 'Social',
+            category: 'Content',
+            content: `
+                <div style="display: flex; gap: 12px; justify-content: center; padding: 15px;">
+                    <a href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #1877f2; color: white; border-radius: 50%; text-decoration: none;"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #1da1f2; color: white; border-radius: 50%; text-decoration: none;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; border-radius: 50%; text-decoration: none;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #0077b5; color: white; border-radius: 50%; text-decoration: none;"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            `,
+            media: '<i class="fa fa-share-alt"></i>'
+        });
+
+        bm.add('social-element', {
+            label: 'Social Element',
+            category: 'Content',
+            content: '<a href="#" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #6366f1; color: white; border-radius: 50%; text-decoration: none;"><i class="fab fa-facebook-f"></i></a>',
+            media: '<i class="fa fa-share"></i>'
+        });
+
+        bm.add('spacer-block', {
+            label: 'Spacer',
+            category: 'Content',
+            content: '<div style="height: 50px;"></div>',
+            media: '<i class="fa fa-arrows-alt-v"></i>'
+        });
+
+        bm.add('hero-block', {
+            label: 'Hero',
+            category: 'Content',
+            content: `
+                <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 20px; text-align: center; color: white;">
+                    <h1 style="font-size: 48px; margin-bottom: 20px; font-weight: 700;">Welcome to Your Website</h1>
+                    <p style="font-size: 20px; margin-bottom: 30px; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">Create beautiful websites with our drag & drop builder</p>
+                    <a href="#" style="display: inline-block; padding: 15px 40px; background: white; color: #667eea; text-decoration: none; border-radius: 30px; font-weight: bold;">Get Started</a>
+                </section>
+            `,
+            media: '<i class="fa fa-heading"></i>'
+        });
+
+        bm.add('html-block', {
+            label: 'HTML Block',
+            category: 'Content',
+            content: '<div style="padding: 20px; background: #f5f5f5; border: 1px dashed #ccc;">Custom HTML Block</div>',
+            media: '<i class="fa fa-code"></i>'
+        });
+
+        // ============== LAYOUT CATEGORY ==============
+        bm.add('1-column', {
+            label: '1 Column',
+            category: 'Layout',
+            content: '<div style="display: flex; padding: 10px;"><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-square"></i>'
+        });
+
+        bm.add('2-columns-50', {
+            label: '2 Columns 50/50',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-columns"></i>'
+        });
+
+        bm.add('2-columns-25-75', {
+            label: '2 Columns 25/75',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 3; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-columns"></i>'
+        });
+
+        bm.add('2-columns-33-67', {
+            label: '2 Columns 33/67',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 2; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-columns"></i>'
+        });
+
+        bm.add('2-columns-67-33', {
+            label: '2 Columns 67/33',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 2; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-columns"></i>'
+        });
+
+        bm.add('2-columns-75-25', {
+            label: '2 Columns 75/25',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 3; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-columns"></i>'
+        });
+
+        bm.add('3-columns', {
+            label: '3 Columns',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-th"></i>'
+        });
+
+        bm.add('4-columns', {
+            label: '4 Columns',
+            category: 'Layout',
+            content: '<div style="display: flex; gap: 10px; padding: 10px;"><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div><div style="flex: 1; min-height: 75px; background: rgba(99,102,241,0.1); border: 1px dashed #6366f1; border-radius: 4px;"></div></div>',
+            media: '<i class="fa fa-th-large"></i>'
+        });
+
+        // ============== SECTIONS CATEGORY ==============
+        bm.add('features-section', {
+            label: 'Features',
+            category: 'Sections',
+            content: `
+                <section style="padding: 80px 20px; background: #f8f9fa;">
+                    <div style="max-width: 1200px; margin: 0 auto;">
+                        <h2 style="text-align: center; font-size: 36px; margin-bottom: 50px; color: #1a1a2e;">Our Features</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+                            <div style="flex: 1; min-width: 280px; max-width: 350px; padding: 30px; background: white; border-radius: 10px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                                <div style="font-size: 48px; margin-bottom: 15px;">🚀</div>
+                                <h3 style="margin-bottom: 10px; color: #1a1a2e;">Fast Performance</h3>
+                                <p style="color: #666;">Lightning fast loading speeds optimized for all devices.</p>
+                            </div>
+                            <div style="flex: 1; min-width: 280px; max-width: 350px; padding: 30px; background: white; border-radius: 10px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                                <div style="font-size: 48px; margin-bottom: 15px;">🎨</div>
+                                <h3 style="margin-bottom: 10px; color: #1a1a2e;">Beautiful Design</h3>
+                                <p style="color: #666;">Modern designs that capture attention and convert visitors.</p>
+                            </div>
+                            <div style="flex: 1; min-width: 280px; max-width: 350px; padding: 30px; background: white; border-radius: 10px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                                <div style="font-size: 48px; margin-bottom: 15px;">📱</div>
+                                <h3 style="margin-bottom: 10px; color: #1a1a2e;">Fully Responsive</h3>
+                                <p style="color: #666;">Looks perfect on desktop, tablet, and mobile devices.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            media: '<i class="fa fa-th-large"></i>'
+        });
+
+        bm.add('pricing-section', {
+            label: 'Pricing',
+            category: 'Sections',
+            content: `
+                <section style="padding: 80px 20px; background: white;">
+                    <div style="max-width: 1000px; margin: 0 auto;">
+                        <h2 style="text-align: center; font-size: 36px; margin-bottom: 50px; color: #1a1a2e;">Pricing Plans</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+                            <div style="flex: 1; min-width: 280px; max-width: 320px; padding: 40px; background: #f8f9fa; border-radius: 15px; text-align: center;">
+                                <h3 style="font-size: 24px; margin-bottom: 10px; color: #1a1a2e;">Basic</h3>
+                                <div style="font-size: 48px; font-weight: bold; color: #6366f1; margin-bottom: 20px;">$9<span style="font-size: 16px; font-weight: normal;">/mo</span></div>
+                                <ul style="list-style: none; padding: 0; margin-bottom: 30px; text-align: left;">
+                                    <li style="padding: 10px 0; border-bottom: 1px solid #ddd; color: #666;">✓ 5 Projects</li>
+                                    <li style="padding: 10px 0; border-bottom: 1px solid #ddd; color: #666;">✓ 1GB Storage</li>
+                                    <li style="padding: 10px 0; color: #666;">✓ Email Support</li>
+                                </ul>
+                                <a href="#" style="display: block; padding: 15px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Get Started</a>
+                            </div>
+                            <div style="flex: 1; min-width: 280px; max-width: 320px; padding: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 15px; text-align: center; color: white; transform: scale(1.05);">
+                                <h3 style="font-size: 24px; margin-bottom: 10px;">Pro</h3>
+                                <div style="font-size: 48px; font-weight: bold; margin-bottom: 20px;">$29<span style="font-size: 16px; font-weight: normal;">/mo</span></div>
+                                <ul style="list-style: none; padding: 0; margin-bottom: 30px; text-align: left;">
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.3);">✓ Unlimited Projects</li>
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.3);">✓ 10GB Storage</li>
+                                    <li style="padding: 10px 0;">✓ Priority Support</li>
+                                </ul>
+                                <a href="#" style="display: block; padding: 15px; background: white; color: #6366f1; text-decoration: none; border-radius: 8px; font-weight: bold;">Get Started</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            media: '<i class="fa fa-dollar-sign"></i>'
+        });
+
+        bm.add('testimonials-section', {
+            label: 'Testimonials',
+            category: 'Sections',
+            content: `
+                <section style="padding: 80px 20px; background: #1a1a2e; color: white;">
+                    <div style="max-width: 1000px; margin: 0 auto;">
+                        <h2 style="text-align: center; font-size: 36px; margin-bottom: 50px;">What Our Clients Say</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+                            <div style="flex: 1; min-width: 280px; max-width: 400px; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                                <p style="font-size: 18px; line-height: 1.6; margin-bottom: 20px;">"This is the best website builder I've ever used. Simple, intuitive, and powerful!"</p>
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="width: 50px; height: 50px; background: #6366f1; border-radius: 50%;"></div>
+                                    <div>
+                                        <strong>John Doe</strong><br>
+                                        <span style="opacity: 0.7; font-size: 14px;">CEO, Tech Company</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            media: '<i class="fa fa-quote-right"></i>'
+        });
+
+        bm.add('contact-section', {
+            label: 'Contact',
+            category: 'Sections',
+            content: `
+                <section style="padding: 80px 20px; background: #f8f9fa;">
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <h2 style="text-align: center; font-size: 36px; margin-bottom: 30px; color: #1a1a2e;">Get In Touch</h2>
+                        <p style="text-align: center; color: #666; margin-bottom: 40px;">Have questions? We'd love to hear from you.</p>
+                        <form style="display: flex; flex-direction: column; gap: 20px;">
+                            <input type="text" placeholder="Your Name" style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                            <input type="email" placeholder="Your Email" style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                            <textarea placeholder="Your Message" rows="5" style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                            <button type="submit" style="padding: 15px 30px; background: #6366f1; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 500;">Send Message</button>
+                        </form>
+                    </div>
+                </section>
+            `,
+            media: '<i class="fa fa-envelope"></i>'
+        });
+
+        bm.add('footer-section', {
+            label: 'Footer',
+            category: 'Sections',
+            content: `
+                <footer style="padding: 60px 20px 30px; background: #1a1a2e; color: white;">
+                    <div style="max-width: 1200px; margin: 0 auto;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 40px; margin-bottom: 40px;">
+                            <div style="flex: 2; min-width: 200px;">
+                                <h3 style="font-size: 24px; margin-bottom: 15px;">Your Brand</h3>
+                                <p style="color: rgba(255,255,255,0.7); line-height: 1.6;">Building the future of web development, one website at a time.</p>
+                            </div>
+                            <div style="flex: 1; min-width: 150px;">
+                                <h4 style="margin-bottom: 15px;">Quick Links</h4>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="margin-bottom: 10px;"><a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none;">Home</a></li>
+                                    <li style="margin-bottom: 10px;"><a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none;">Features</a></li>
+                                    <li style="margin-bottom: 10px;"><a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none;">Pricing</a></li>
+                                    <li><a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none;">Contact</a></li>
+                                </ul>
+                            </div>
+                            <div style="flex: 1; min-width: 150px;">
+                                <h4 style="margin-bottom: 15px;">Contact</h4>
+                                <p style="color: rgba(255,255,255,0.7); margin-bottom: 10px;">📧 hello@example.com</p>
+                                <p style="color: rgba(255,255,255,0.7);">📞 +1 234 567 890</p>
+                            </div>
+                        </div>
+                        <div style="text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <p style="color: rgba(255,255,255,0.5);">© 2024 Your Brand. All rights reserved.</p>
+                        </div>
+                    </div>
+                </footer>
+            `,
+            media: '<i class="fa fa-bars"></i>'
+        });
+
+        // ============== EXTRA CATEGORY ==============
+        bm.add('accordion-block', {
+            label: 'Accordion',
+            category: 'Extra',
+            content: `
+                <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                    <div style="background: #f8f9fa; padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; font-weight: 600;">
+                        Accordion Item 1
+                    </div>
+                    <div style="padding: 15px;">
+                        Content for accordion item 1. Click to expand or collapse.
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; font-weight: 600;">
+                        Accordion Item 2
+                    </div>
+                    <div style="padding: 15px; display: none;">
+                        Content for accordion item 2. Click to expand or collapse.
+                    </div>
+                </div>
+            `,
+            media: '<i class="fa fa-list"></i>'
+        });
+
+        bm.add('table-block', {
+            label: 'Table',
+            category: 'Extra',
+            content: `
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                        <tr style="background: #6366f1; color: white;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Header 1</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Header 2</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Header 3</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Row 1, Cell 1</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Row 1, Cell 2</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Row 1, Cell 3</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 12px; border: 1px solid #ddd;">Row 2, Cell 1</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Row 2, Cell 2</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Row 2, Cell 3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `,
+            media: '<i class="fa fa-table"></i>'
+        });
+
+        bm.add('video-block', {
+            label: 'Video',
+            category: 'Extra',
+            content: { type: 'video' },
+            media: '<i class="fa fa-video"></i>'
+        });
+
+        bm.add('map-block', {
+            label: 'Map',
+            category: 'Extra',
+            content: { type: 'map' },
+            media: '<i class="fa fa-map-marker-alt"></i>'
+        });
+
+        bm.add('link-block', {
+            label: 'Link',
+            category: 'Extra',
+            content: '<a href="#" style="color: #6366f1; text-decoration: underline;">Click here</a>',
+            media: '<i class="fa fa-link"></i>'
+        });
+
+        bm.add('list-block', {
+            label: 'List',
+            category: 'Extra',
+            content: `
+                <ul style="padding-left: 20px; line-height: 2;">
+                    <li>List item one</li>
+                    <li>List item two</li>
+                    <li>List item three</li>
+                </ul>
+            `,
+            media: '<i class="fa fa-list-ul"></i>'
+        });
+
+        // Load project data
+        async function loadProject() {
+            setStatus('Loading...');
+            try {
+                const infoRes = await fetch(API_BASE + '/projects', { headers: getHeaders() });
+                const infoData = await infoRes.json();
+                const project = infoData.projects?.find(p => p.id === projectId);
+
+                if (project) {
+                    document.getElementById('project-name').textContent = project.name;
+                    document.title = project.name + ' - Khibroh Web Builder';
+                }
+
+                const res = await fetch(API_BASE + '/projects/' + projectId, {
+                    headers: getHeaders()
+                });
+
+                if (res.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                if (res.status === 404) {
+                    alert('Project not found');
+                    window.location.href = '/dashboard.html';
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (data && Object.keys(data).length > 0) {
+                    editor.loadProjectData(data);
+                }
+
+                setStatus('Ready');
+            } catch (err) {
+                console.error('Load error:', err);
+                setStatus('Error loading', true);
+            }
+        }
+
+        // Save project
+        async function saveProject() {
+            setStatus('Saving...');
+            try {
+                const data = editor.getProjectData();
+
+                const res = await fetch(API_BASE + '/projects/' + projectId, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    setStatus('Saved ✓');
+                    setTimeout(() => setStatus('Ready'), 2000);
+                } else {
+                    setStatus('Save failed', true);
+                }
+            } catch (err) {
+                console.error('Save error:', err);
+                setStatus('Save failed', true);
+            }
+        }
+
+        // Device buttons
+        document.querySelectorAll('.device-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                editor.setDevice(btn.dataset.device);
+            });
+        });
+
+        // Toolbar buttons
+        document.getElementById('btn-save').addEventListener('click', saveProject);
+        document.getElementById('btn-undo').addEventListener('click', () => editor.UndoManager.undo());
+        document.getElementById('btn-redo').addEventListener('click', () => editor.UndoManager.redo());
+        document.getElementById('btn-preview').addEventListener('click', () => editor.runCommand('preview'));
+
+        // Reload button
+        document.getElementById('btn-reload').addEventListener('click', () => {
+            loadProject();
+        });
+
+        // Fullscreen button
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            const elem = document.documentElement;
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // View Code button
+        document.getElementById('btn-code').addEventListener('click', () => {
+            const html = editor.getHtml();
+            const css = editor.getCss();
+            const fullCode = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+${css}
+    </style>
+</head>
+<body>
+${html}
+</body>
+</html>`;
+
+            // Create modal for viewing code
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;';
+            modal.innerHTML = `
+                <div style="background:#1a1a2e;border-radius:12px;width:80%;height:80%;display:flex;flex-direction:column;overflow:hidden;">
+                    <div style="padding:15px 20px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:white;font-weight:600;">View Code</span>
+                        <button onclick="this.closest('div').parentElement.remove()" style="background:transparent;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">&times;</button>
+                    </div>
+                    <textarea style="flex:1;background:#0f0f23;color:#10b981;border:none;padding:20px;font-family:monospace;font-size:13px;resize:none;" readonly>${fullCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    <div style="padding:15px 20px;border-top:1px solid #334155;display:flex;gap:10px;justify-content:flex-end;">
+                        <button onclick="navigator.clipboard.writeText(this.closest('div').parentElement.querySelector('textarea').value.replace(/&lt;/g,'<').replace(/&gt;/g,'>'))" style="padding:10px 20px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;">Copy Code</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        });
+
+        // Import HTML button
+        document.getElementById('btn-import').addEventListener('click', () => {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;';
+            modal.innerHTML = `
+                <div style="background:#1a1a2e;border-radius:12px;width:60%;display:flex;flex-direction:column;overflow:hidden;">
+                    <div style="padding:15px 20px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:white;font-weight:600;">Import HTML</span>
+                        <button id="close-import" style="background:transparent;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">&times;</button>
+                    </div>
+                    <textarea id="import-code" placeholder="Paste your HTML code here..." style="height:300px;background:#0f0f23;color:#e2e8f0;border:none;padding:20px;font-family:monospace;font-size:13px;resize:none;"></textarea>
+                    <div style="padding:15px 20px;border-top:1px solid #334155;display:flex;gap:10px;justify-content:flex-end;">
+                        <button id="cancel-import" style="padding:10px 20px;background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:6px;cursor:pointer;">Cancel</button>
+                        <button id="confirm-import" style="padding:10px 20px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;">Import</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.querySelector('#close-import').addEventListener('click', () => modal.remove());
+            modal.querySelector('#cancel-import').addEventListener('click', () => modal.remove());
+            modal.querySelector('#confirm-import').addEventListener('click', () => {
+                const code = modal.querySelector('#import-code').value;
+                if (code) {
+                    editor.setComponents(code);
+                    setStatus('Imported ✓');
+                }
+                modal.remove();
+            });
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        });
+
+        // Export HTML button
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const html = editor.getHtml();
+            const css = editor.getCss();
+            const fullCode = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exported Page</title>
+    <style>
+${css}
+    </style>
+</head>
+<body>
+${html}
+</body>
+</html>`;
+
+            const blob = new Blob([fullCode], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'page.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            setStatus('Exported ✓');
+        });
+
+        // Clear Canvas button
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the canvas? This action cannot be undone.')) {
+                editor.DomComponents.clear();
+                editor.CssComposer.clear();
+                setStatus('Canvas cleared');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveProject();
+            }
+        });
+
+        // Auto-save every 30 seconds
+        setInterval(() => {
+            if (editor.getDirtyCount() > 0) {
+                saveProject();
+            }
+        }, 30000);
+
+        // Panel Tab Switching
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active tab styles
+                document.querySelectorAll('.panel-tab').forEach(t => {
+                    t.style.background = 'transparent';
+                    t.style.border = '1px solid var(--border)';
+                    t.style.color = 'var(--text)';
+                });
+                tab.style.background = 'var(--primary)';
+                tab.style.border = 'none';
+                tab.style.color = 'white';
+
+                // Show/hide panels
+                const panelName = tab.dataset.panel;
+                document.querySelectorAll('.panel-content').forEach(p => p.style.display = 'none');
+                document.getElementById(panelName + '-panel').style.display = 'block';
+            });
+        });
+
+        // Load project on init
+        loadProject();
+    </script>
+</body>
+
+</html>

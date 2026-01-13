@@ -1,0 +1,13 @@
+{
+  "name": "khibroh-web-builder",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler pages dev ./public --d1 DB=khibroh-web-builder-db --r2 R2_BUCKET=khibroh-web-builder-assets --port 8788",
+    "deploy": "wrangler pages deploy ./public",
+    "db:migrate": "wrangler d1 execute khibroh-web-builder-db --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.16"
+  }
+}
